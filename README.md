@@ -1,4 +1,4 @@
-# NEW EVA 2024
+# NEW EVA 2025
 <p align="center">
 <img src="docs/eva.jpg" width="60%" height="60%">
 </p>
