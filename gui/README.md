@@ -46,4 +46,4 @@ The GUI is divided into several sections (ROV, Float, PID, etc.). The one concer
 
 ![SCHEMA](./static/IMG/SCHEMA.png)
 ## License
-No license
+No license.
