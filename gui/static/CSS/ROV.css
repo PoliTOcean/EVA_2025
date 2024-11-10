@@ -54,7 +54,6 @@
 }
 
 
-
 .container {
     padding: 10px 10px 10px 10px;
     border-radius: 10px;
@@ -62,16 +61,17 @@
     width: 40%;
     background-color: #1D2125;
     color: white;
-
 }
 
 .title {
+    position: relative;
     display: flex;
     justify-content: center;
     margin: 0 0 5px 0;
     height: 20px;
     width: 100%;
     color: white;
+    z-index: 2;
 } 
 
 .elenco {
@@ -81,11 +81,13 @@
 }
 
 
-
 .div2 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
     grid-area: 1 / 1 / 9 / 9;
     background-color: #101214;
-
 }
 
 
@@ -118,13 +120,20 @@
     cursor: pointer;
     border-radius: 10px;
 }
-
 .rotate180 {
     -webkit-transform: rotate(180deg);
     -moz-transform: rotate(180deg);
     -o-transform: rotate(180deg);
     -ms-transform: rotate(180deg);
     transform: rotate(180deg);
+}
+
+.rotate90 {
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -o-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+    transform: rotate(90deg);
 }
 
 .div3 {
@@ -220,7 +229,7 @@ img {
 }
 
 .display-container {
-    background-color: #101214;
+  background-color: #101214;
   border-radius: 10px;
   padding: 10px;
   margin: 5px;
@@ -234,23 +243,31 @@ img {
   margin: 0;
 }
 
-.buttons {
+.buttonsContainer {
   display: flex;
   justify-content: center;
+  gap: 10px;
 }
 
-button {
-  margin: 5px;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  background-color: #101214;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  transition: background-color 0.3s ease;
+.button {
+    margin-top: 20px;
+    z-index: 2;
+    position: relative;
+    display: inline-block;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #AE2E24;
+    color: #fff;
+    cursor: pointer;
+    text-align: center;
+    width: 80%;
+    max-width: 150px;
 }
 
-button:hover {
-  background-color: #38414A;
+.button:hover{
+    background-color: #AE2E24;
 }
+
+
+

@@ -58,6 +58,7 @@ span {
     flex-wrap: wrap;
     gap: 10px;
     padding: 10px;
+    position: relative;
 }
 
 .report {
@@ -79,4 +80,23 @@ h2 {
 
 .img_style {
     margin: 10px 0 0 0;
+}
+
+.floatButton{
+    margin-top: 20px;
+    z-index: 2;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: inline-block;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #AE2E24;
+    color: #fff;
+    cursor: pointer;
+}
+
+.button:hover{
+    background-color: #AE2E24;
 }

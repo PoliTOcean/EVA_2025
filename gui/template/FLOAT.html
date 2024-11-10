@@ -4,22 +4,20 @@
     <div class="g1">
     </div>
     <div class="g2">
+        <style>
+          #expertFloat{display: none}
+        </style>
+        <button id="toggleButton" class="floatButton" onclick="switchDiv()">EXPERT</button> 
         <div class="container float">
+        
             <div class="title">FLOAT</div>
-            <div class="elenco">
+            
+            <div id="basicFloat" class="elenco">
                 <div class="cat status SERIAL">
-                    <label>
-                    <span>
-                        SERIAL CONNECTION
-                    </span>
-                    </label>    
+                    <label><span>SERIAL CONNECTION</span></label>    
                 </div>
                 <div class="cat status READY">
-                    <label>
-                    <span>
-                        FLOAT READY
-                    </span>
-                    </label>    
+                    <label><span>FLOAT READY</span></label>    
                 </div>
                 <div class="cat status DROP disabled" onclick="msg(this, 0)">
                     <label><span>DROP</span></label>    
@@ -27,6 +25,10 @@
                 <div class="cat status DROP disabled" onclick="statusFLOAT('SEND_PACKAGE')">
                     <label><span>SEND PACKAGE</span></label>    
                 </div>
+            </div>
+            
+            
+            <div id="expertFloat" class="elenco">
                 <div class="cat status DROP disabled" onclick="msg(this, 1)">
                     <label><span>TOGGLE AUTO MODE</span></label>    
                 </div>
@@ -39,34 +41,17 @@
                 <div class="cat status DROP disabled" onclick="msg(this, 4)">
                     <label><span>CLEAR SD</span></label>    
                 </div>
-
-                <div class="cat status IMMERSION" >
-                    <label>
-                    <span>
-                        IMMERSION
-                    </span>
-                    </label>    
+                <div class="cat status IMMERSION">
+                    <label><span>IMMERSION</span></label>    
                 </div>
                 <div class="cat status LISTENING" style="background-color: #161A1D;">
-                    <label>
-                    <span>
-                        LISTENING
-                    </span>
-                    </label>    
+                    <label><span>LISTENING</span></label>    
                 </div>
                 <div class="cat status AUTO_MODE" style="background-color: #161A1D;">
-                    <label>
-                    <span>
-                        AUTO MODE
-                    </span>
-                    </label>    
+                    <label><span>AUTO MODE</span></label>    
                 </div>
                 <div class="cat status CONN" style="background-color: #161A1D;">
-                    <label>
-                    <span>
-                        CONNECTION
-                    </span>
-                    </label>    
+                    <label><span>CONNECTION</span></label>    
                 </div>
             </div>
         </div>

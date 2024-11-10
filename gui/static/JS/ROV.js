@@ -1,4 +1,5 @@
 let page_now;
+let mainCameraId = 'camera_0'
 
 addEventListener("resize", (event) => {
     let h = window.innerHeight;
@@ -9,7 +10,7 @@ addEventListener("resize", (event) => {
 });
 
 
-// [CAMERA MANAGMENT]
+// [CAMERA MANAGEMENT]
 
 function switching(id) {
     let n_camera = `${id.match(/\d+/)[0]}`;
@@ -29,6 +30,7 @@ function switching(id) {
     deploy.append(camera_p.firstElementChild);
     info["cameras"][n_camera]["status"] = 0;
     info["cameras"][z]["status"] = 1;
+    mainCameraId = target.querySelector('video').id;
 }
 
 async function onoff(id) {
@@ -98,8 +100,6 @@ function updateIMU(imuJSON) {
     compass.updateHeading(imuJSON["YAW"]);
 }
 
-
-
 function updateSensors(sensorsJSON) {
     const depth = document.querySelector("#data_depth");
     const temp = document.querySelector("#data_tempExt");
@@ -121,4 +121,11 @@ function ROVLoader() {
         FlightIndicators.TYPE_HEADING,
         options_instruments
     );
+}
+
+let rotationAngle = 0;
+function rotateVideo(){
+    const video = document.getElementById(mainCameraId);
+    rotationAngle += 90;
+    video.style.transform =  `rotate(${rotationAngle}deg)`;
 }

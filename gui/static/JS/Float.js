@@ -153,7 +153,8 @@ async function statusFLOAT(msg) {
             handleStatus(data);
             break
         case "SEND_PACKAGE":
-            publishPackage(data);
+            if (mux == 1) publishPackage(data);
+            //else alert("NOT READY FOR PACKAGE");
             break
     }
 }
@@ -169,4 +170,21 @@ async function msg(e, msg_id) {
     const data = await fetch(`FLOAT/msg?msg=${msgs[msg_id]}`);
     if (data.status == 201) mux = 1;
     else alert("Is USB cable connected?")
+}
+
+function switchDiv(){
+    const div1 = document.getElementById('basicFloat');
+    const div2 = document.getElementById('expertFloat');
+    const button = document.getElementById('toggleButton');
+    
+    if(div1.style.display === 'none') {
+        button.innerText = 'EXPERT';
+        div1.style.display = 'flex';
+        div2.style.display = 'none';
+    }
+    else {
+        button.innerText = 'BASIC';
+        div1.style.display = 'none';
+        div2.style.display = 'flex';
+    }
 }
