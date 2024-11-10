@@ -1,9 +1,9 @@
 
-const mqtt_c = mqtt.connect("mqtt://10.0.0.254:9000");
+// const mqtt_c = mqtt.connect("mqtt://10.0.0.254:9000");
 
 
 // ! [DEBUG]
-// const mqtt_c = mqtt.connect("mqtt://127.0.0.1:8080");
+const mqtt_c = mqtt.connect("mqtt://127.0.0.1:8080");
 
 mqtt_c.on("connect", () => {
     console.info("[MQTT] Ready");

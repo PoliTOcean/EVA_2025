@@ -24,7 +24,7 @@ while true; do
 
     # Create the JSON string
     json_data=$(printf '{"pidState":%d, "armed":%d, "depth":%.2f, "yaw":%.2f, "roll":%.2f, "pitch":%.2f, "tempInt":%.2f, "tempExt":%.2f}' \
-                  "$pidState" "$armed" "$depth" "$yaw" "$roll" "$pitch" "$tempInt" "$tempExt")
+                "$pidState" "$armed" "$depth" "$yaw" "$roll" "$pitch" "$tempInt" "$tempExt")
 
     # Publish to Mosquitto
     mosquitto_pub -t 'gui/' -h 127.0.0.1 -m "$json_data"

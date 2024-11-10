@@ -26,7 +26,7 @@
             <div class="title">Sensors</div>
             <div class="sensor" id="sensor_depth">
                 <div class="flex_s">
-                    <img src="file:///home/vboxuser/Desktop/EVA_2025/gui/template/ROV_files/Depth.svg&#39;)%7D%7D">
+                    <img src="{{url_for('static', filename ='SVG/Depth.svg')}}" >
                     <label>
                         Depth:
                     </label>
@@ -37,7 +37,7 @@
             </div>
             <div class="sensor" id="sensor_tempExt">
                 <div class="flex_s">
-                    <img src="file:///home/vboxuser/Desktop/EVA_2025/gui/template/ROV_files/temperature.svg&#39;)%7D%7D">
+                    <img src="{{url_for('static', filename ='SVG/temperature.svg')}}" >
                     <label>
                         Temperature:
                     </label>
@@ -59,7 +59,7 @@
       </div>  
     <div class="div2">
         <div class="camera_p">
-            <div id="c0" class="screen" onclick="switching(&#39;camera_0&#39;)">
+            <div id="c0" class="screen" onclick="switching('camera_0')">
                 <div class="title">Camera 0</div>
                 <!--<img id="camera_0" class="rotate180 rotate90" src="file:///home/vboxuser/Desktop/EVA_2025/gui/template/ROV_files/stream_002">-->
                 <video id="camera_0" class = "video-container" src="{{url_for('static', filename='rain0.mp4')}}" muted autoplay loop></video>
@@ -69,7 +69,7 @@
     </div>
     <div class="div3">
         <div class="camera_s">
-            <div id="c1" class="screen" onclick="switching(&#39;camera_1&#39;)">
+            <div id="c1" class="screen" onclick="switching('camera_1')">
                 <div class="title">Camera 1</div>
                 <!-- <img id="camera_1" src="file:///home/vboxuser/Desktop/EVA_2025/gui/template/ROV_files/stream"> -->
                 <video id="camera_1" class = "video-container" src="{{url_for('static', filename='rain0.mp4')}}" muted autoplay loop></video>
@@ -77,7 +77,7 @@
         </div>  
         <!-- <button class = "button" onclick = "rotateVideo('camera_1')"> Rotate 90° </button> -->
         <div class="camera_s">
-            <div id="c2" class="screen" onclick="switching(&#39;camera_2&#39;)">
+            <div id="c2" class="screen" onclick="switching('camera_2')">
                 <div class="title">Camera 2</div>
                 <!-- <img id="camera_2" src="file:///home/vboxuser/Desktop/EVA_2025/gui/template/ROV_files/stream_003"> -->
                 <video id="camera_2" class = "video-container" src="{{url_for('static', filename='rain0.mp4')}}" muted autoplay loop></video>
@@ -93,17 +93,17 @@
                 <div class="elenco">
                     <div class="cat but">
                         <label>
-                        <input type="checkbox" checked="checked" onchange="onoff(&#39;camera_0&#39;)"><span>Camera 0</span>
+                        <input type="checkbox" checked="checked" onchange="onoff('camera_0')"><span>Camera 0</span>
                     </label>
                     </div>
                     <div class="cat but">
                         <label>
-                        <input type="checkbox" checked="checked" onchange="onoff(&#39;camera_1&#39;)"><span>Camera 1</span>
+                        <input type="checkbox" checked="checked" onchange="onoff('camera_1')"><span>Camera 1</span>
                     </label>
                     </div>
                     <div class="cat but">
                         <label>
-                        <input type="checkbox" checked="checked" onchange="onoff(&#39;camera_2&#39;)"><span>Camera 2</span>
+                        <input type="checkbox" checked="checked" onchange="onoff('camera_2')"><span>Camera 2</span>
                         </label>
                     </div>
                 </div>
