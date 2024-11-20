@@ -54,6 +54,7 @@ std::map <std::string, state_commands_map> state_mapper;
 
 std::pair <Topic, json> msg;
 uint8_t rov_armed=0;
+uint8_t controller_state=CONTROL_OFF;
 
 void state_commands(json msg, Timer_data* data);
 
@@ -175,12 +176,21 @@ void state_commands(json msg, Timer_data* data){
     try{
         cmd = state_mapper[msg.begin().key()];
         switch(cmd){
-            case ROV_ARMED:
-                rov_armed = (uint8_t)msg["ROV_ARMED"];
+            case ARM_ROV:
+                rov_armed = !rov_armed;
                 if(rov_armed)
                     std::cout << "[MAIN][INFO] ROV ARMED" << std::endl;
                 else
                     std::cout << "[MAIN][INFO] ROV DISARMED" << std::endl;
+                break;
+            case CHANGE_CONTROLLER_STATUS:
+                controller_state = !controller_state;
+                if(controller_state){
+                    //data->controller->activate(CONTROL_Z);
+                    data->controller->activate(general_config["controller_profile"]);
+                }
+                else
+                    data->controller->disactivate(CONTROL_ALL);
                 break;
             case PITCH_REFERENCE_UPDATE:
                 data->controller->change_reference(CONTROL_PITCH, msg["PITCH_REFERENCE_UPDATE"]);
