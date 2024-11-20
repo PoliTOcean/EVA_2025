@@ -109,10 +109,14 @@ void Motors::update_debug(json& debug){
         
         debug["motor_thrust"][motor_name] = floatToStringWithDecimals(motor_thrust[i], 2);
         debug["pwm"][motor_name] = floatToStringWithDecimals(pwm[i], 2);
+        debug["motor_thrust_max_xy"] = floatToStringWithDecimals(thrust_max_xy, 2);
+        debug["motor_thrust_max_z"] = floatToStringWithDecimals(thrust_max_z, 2);
     }
 }
 
 void Motors::offset_thrust_max(float offset){
     thrust_max_xy += offset;
     thrust_max_z += offset;
+    std::cout << "[MOTORS][INFO] new motor thrust max for xy: " << thrust_max_xy << std::endl;
+    std::cout << "[MOTORS][INFO] new motor thrust max for z: " << thrust_max_z << std::endl;
 }

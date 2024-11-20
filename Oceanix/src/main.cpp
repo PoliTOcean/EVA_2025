@@ -42,7 +42,8 @@ json json_axes = {
 };
 
 typedef enum {
-    ROV_ARMED,
+    ARM_ROV,
+    CHANGE_CONTROLLER_STATUS,
     PITCH_REFERENCE_UPDATE,
     ROLL_REFERENCE_UPDATE,
     PITCH_REFERENCE_OFFSET,
@@ -52,7 +53,6 @@ typedef enum {
 } state_commands_map;
 std::map <std::string, state_commands_map> state_mapper;
 
-std::pair <Topic, json> msg;
 uint8_t rov_armed=0;
 uint8_t controller_state=CONTROL_OFF;
 
@@ -64,7 +64,8 @@ int main(){
     uv_timer_t timer_com;
     uv_timer_t timer_debug;
 
-    state_mapper["ROV_ARMED"] = ROV_ARMED;
+    state_mapper["ARM_ROV"] = ARM_ROV;
+    state_mapper["CHANGE_CONTROLLER_STATUS"] = CHANGE_CONTROLLER_STATUS;
     state_mapper["PITCH_REFERENCE_UPDATE"] = PITCH_REFERENCE_UPDATE;
     state_mapper["ROLL_REFERENCE_UPDATE"] = ROLL_REFERENCE_UPDATE;
     state_mapper["PITCH_REFERENCE_OFFSET"] = PITCH_REFERENCE_OFFSET;
@@ -140,6 +141,7 @@ void timer_motors_callback(uv_timer_t* handle) {
 
 void timer_com_callback(uv_timer_t* handle){
     Timer_data* data = static_cast<Timer_data*>(handle->data);
+    std::pair <Topic, json> msg;
 
     if(data->mqtt_client->receive_msg(&msg)){
         if(data->mqtt_client->is_msg_type(msg.first, Topic::AXES))
@@ -162,7 +164,7 @@ void timer_debug_callback(uv_timer_t* handle){
     if(general_config["debug_controller"])
         data->controller->update_debug(json_debug);
     if(general_config["debug_general"]){
-        json_debug["rov_armed"] = rov_armed;
+        json_debug["rov_armed"] = (rov_armed) ? "OK" : "OFF";
         data->sensor->update_debug(json_debug);
     }
 
@@ -180,6 +182,7 @@ void state_commands(json msg, Timer_data* data){
                 rov_armed = !rov_armed;
                 if(rov_armed)
                     std::cout << "[MAIN][INFO] ROV ARMED" << std::endl;
+                    data->sensor->set_pressure_baseline();
                 else
                     std::cout << "[MAIN][INFO] ROV DISARMED" << std::endl;
                 break;

@@ -1,8 +1,8 @@
 {
     "General" : {
-        "debug_motor": false,
-        "debug_controller": false,
-        "debug_mqtt": false,
+        "debug_motor": true,
+        "debug_controller": true,
+        "debug_mqtt": true,
         "debug_general" : true,
         "debug_interval" : 500,
         "controller_profile" : 1,
