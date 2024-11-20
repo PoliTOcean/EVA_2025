@@ -33,15 +33,23 @@ Each topic below defines the permissible keys and values, as well as the directi
 2. ### **state_commands/**
    - **Direction**: GUI → Oceanix
    - **Description**: Sends state commands to Oceanix, typically in response to user actions in the GUI.
-   - **Keys**:
+   - **Structure**:
      - `command_name`: The name of the command, which may correspond to a button pressed in the GUI.
-     - `value`: Boolean `0` or `1`
-   - **Example Message**:
-     ```json
-     {
-       "command_name": 1
-     }
-     ```
+     - `value`: Optional
+    - **Possible command_name**:
+      - `ARM_ROV`: Arms or disarms the ROV. The value is irrelevant.
+      - `CHANGE_CONTROLLER_STATUS`: Changes the controller status. The value is irrelevant.
+      - `PITCH_REFERENCE_UPDATE`: Updates the pitch reference value.
+      - `ROLL_REFERENCE_UPDATE`: Updates the roll reference value.
+      - `PITCH_REFERENCE_OFFSET`: Offsets the current pitch reference value.
+      - `ROLL_REFERENCE_OFFSET`: Offsets the current roll reference value.
+      - `THRUST_MAX_OFFSET`: Offsets the maximum thrust value.
+    - **Example Message**:
+      ```json
+      {
+        "PITCH_REFERENCE_UPDATE": 10.5
+      }
+      ```
 
 3. ### **arm_commands/**
    - **Direction**: GUI → Oceanix
@@ -49,10 +57,19 @@ Each topic below defines the permissible keys and values, as well as the directi
    - **Keys**:
      - `command`: command
      - `command_name`: The name of the command, indicating the arm action.
+  - **Possible command_name**:
+    - `ROTATE_WRIST_CCW`: Rotate the wrist counterclockwise.
+    - `ROTATE_WRIST_CW`: Rotate the wrist clockwise.
+    - `STOP_WRIST`: Stop the wrist movement.
+    - `OPEN_NIPPER`: Open the nipper.
+    - `CLOSE_NIPPER`: Close the nipper.
+    - `STOP_NIPPER`: Stop the nipper movement.
+    - `TORQUE_WRIST_ON`: Turn on the wrist torque.
+    - `TORQUE_WRIST_OFF`: Turn off the wrist torque.
    - **Example Message**:
      ```json
      {
-       "command": "command_name"
+       "command": "ROTATE_WRIST_CCW"
      }
      ```
 
@@ -64,16 +81,54 @@ Each topic below defines the permissible keys and values, as well as the directi
      - `value`: Current value of the variable
    - **Information Types**:
      - **Heartbeat**: Essential information required for GUI functionality.
+    - **Keys**:
+      - `rov_armed` : `["OK", "OFF"]`
+      - `controller_state`
+        - `DEPTH` : `["ACTIVE", "READY", "OFF"]`
+        - `ROLL` : `["ACTIVE", "READY", "OFF"]`
+        - `PITCH` : `["ACTIVE", "READY", "OFF"]`
+      - `force_z` : Newton
+      - `force_roll` : Newton
+      - `force_pitch` : Newton
+      - `reference_z` : meters
+      - `reference_roll` : DEG
+      - `reference_pitch` : DEG
+      - `depth` : meters
+      - `roll` : DEG
+      - `pitch` : DEG
+      - `yaw` : DEG
+      - `imu_state` : `["OK", "OFF"]`
+      - `bar_state` : `["OK", "OFF"]`
+      - `motor_thrust_max_xy` : Kgf
+      - `motor_thrust_max_z` : Kgf
+      - `motor_thrust`
+        - `FSX` : Kgf
+        - `FDX` : Kgf
+        - `RSX` : Kgf
+        - `RDX` : Kgf
+        - `UPFSX` : Kgf
+        - `UPFDX` : Kgf
+        - `UPRSX` : Kgf
+        - `UPRDX` : Kgf
+      - `pwm`
+        - `FSX`
+        - `FDX`
+        - `RSX`
+        - `RDX`
+        - `UPFSX`
+        - `UPFDX`
+        - `UPRSX`
+        - `UPRDX`
      - **Optional Debug**: Additional data useful for debugging purposes.
    - **Example Message**:
      ```json
      {
-       "cpu_usage": 34,
-       "temperature": 28
+       "rov_armed": "OK",
+       "depth": 2.8
      }
      ```
 
-5. ### **config/**
+5. ### **config/** (temporary not available)
    - **Direction**: GUI ⇔ Oceanix
    - **Description**: Used to synchronize configuration data between GUI and Oceanix.
    - **Keys**:

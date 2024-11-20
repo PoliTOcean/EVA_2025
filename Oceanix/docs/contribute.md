@@ -4,11 +4,13 @@ Thank you for your interest in contributing to our C++ project! We follow the Go
 
 ## Debug standard
 
-Every class for debug must use the debug function
+Every class for debug must use the `print_log()` function
 
 ```
-[CLASS_NAME] [MSG_TYPE] msg...
+[CLASS_NAME][MSG_TYPE] msg...
 CLASS_NAME must be 7 chars len
 MSG_TYPE must be 5 chars len 
-MSG_TYPE = DEBUG | INFO_ | WARN_ | ERROR
+MSG_TYPE = [DEBUG | INFO_ | WARN_ | ERROR]
 ```
+
+verbose argument enable DEBUG messages INFO, WARN, ERROR are enabled by default
