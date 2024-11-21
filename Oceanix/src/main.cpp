@@ -170,6 +170,9 @@ void timer_debug_callback(uv_timer_t* handle){
 
     if(!json_debug.empty())
         data->mqtt_client->send_debug(json_debug);
+        
+    if(!data->nucleo->is_connected())
+        std::cout<< "NUCLEO disconnected" << std::endl;
 }
 
 void state_commands(json msg, Timer_data* data){
@@ -180,9 +183,10 @@ void state_commands(json msg, Timer_data* data){
         switch(cmd){
             case ARM_ROV:
                 rov_armed = !rov_armed;
-                if(rov_armed)
+                if(rov_armed){
                     std::cout << "[MAIN][INFO] ROV ARMED" << std::endl;
                     data->sensor->set_pressure_baseline();
+                }
                 else
                     std::cout << "[MAIN][INFO] ROV DISARMED" << std::endl;
                 break;
