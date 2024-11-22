@@ -138,5 +138,5 @@ void Controller::update_debug(json& debug){
 }
 
 void Controller::printLog(logLevel logtype, std::string message){
-    Logger::printLog("[CONTROL]", logtype, message);
+    Logger::printLog("CONTROL", logtype, message);
 }

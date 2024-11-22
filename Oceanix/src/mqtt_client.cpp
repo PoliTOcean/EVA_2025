@@ -135,5 +135,5 @@ bool MQTTClient::is_msg_type(Topic topic2, Topic topic1) {
 }
 
 void MQTTClient::printLog(logLevel logtype, std::string message){
-    Logger::printLog("[MQTThst]", logtype, message);
+    Logger::printLog("MQTThst", logtype, message);
 }
