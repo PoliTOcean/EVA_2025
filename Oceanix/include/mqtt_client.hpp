@@ -7,13 +7,14 @@
 #include "mqtt/async_client.h"
 #include "mqtt_client.hpp"
 #include "utils.hpp"
+#include "logger.hpp"
 
 using msg_pt = std::shared_ptr<const mqtt::message>;
 using json = nlohmann::json;
 
 enum class Topic { AXES, COMMANDS, ARM, CONFIG, DEBUG };
 
-class MQTTClient {
+class MQTTClient : Logger{
     public:
         MQTTClient(std::string server_address, std::string client_id, int QOS, bool verbose);
 
@@ -25,6 +26,7 @@ class MQTTClient {
         bool receive_msg(std::pair <Topic, json>* msgp);
         bool send_debug(json debug_json); // Add mask
         bool is_msg_type(Topic topic2, Topic topic1);
+        virtual void printLog(logLevel logtype, std::string message);
 
     private:
         std::string m_server_address;

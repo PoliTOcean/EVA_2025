@@ -7,6 +7,7 @@
 #include "sensor.hpp"
 #include "control_allocation.hpp"
 #include "motors.hpp"
+#include "logger.hpp"
 
 using json = nlohmann::json;
 
@@ -22,7 +23,7 @@ const uint8_t CONTROL_ALL =     0x07;    //111
  * @class Controller
  * @brief Controls the depth, pitch and roll. When active calculates the thrust for the 4 UP motors
  */
-class Controller {
+class Controller: Logger {
 private:
     uint8_t state;                      /// controller's current state
     bool controller_active;         /// controller internal state  
@@ -90,6 +91,8 @@ public:
      * @param debug json doc for adding the informations
      */
     void update_debug(json& debug);
+
+    virtual void printLog(logLevel logtype, std::string message);
 };
 
 #endif // CONTROLLER_H
