@@ -1,0 +1,35 @@
+name: Build for Raspberry Pi
+
+on:
+  push:
+    branches:
+      - oceanix_dev
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install QEMU and dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y qemu qemu-user-static binfmt-support debootstrap
+
+    - name: Setup Raspberry Pi environment
+      run: |
+        mkdir rpi-root
+        sudo debootstrap --arch=armhf --foreign buster rpi-root http://archive.raspbian.org/raspbian
+        sudo cp /usr/bin/qemu-arm-static rpi-root/usr/bin/
+        sudo chroot rpi-root /bin/bash -c "debootstrap/debootstrap --second-stage"
+
+    - name: Compile in Raspberry Pi environment
+      run: |
+        sudo chroot rpi-root /bin/bash -c "apt update && apt install -y cmake g++ wiringpi"
+        sudo chroot rpi-root /bin/bash -c "mkdir /build && cd /build && cmake /src && make"
+
+    - name: Retrieve built artifacts
+      run: sudo cp rpi-root/build/* ./build-output/
