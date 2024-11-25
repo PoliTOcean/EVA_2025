@@ -27,8 +27,9 @@ jobs:
         sudo chroot rpi-root /bin/bash -c "debootstrap/debootstrap --second-stage"
 
     - name: Compile in Raspberry Pi environment
+      working-directory: ./Oceanix
       run: |
-        sudo chroot rpi-root /bin/bash -c "cd /Oceanix && chmod +x install.sh && ./install.sh"
+        sudo chroot rpi-root /bin/bash -c "chmod +x install.sh && ./install.sh"
 
     - name: Retrieve built artifacts
       run: sudo cp rpi-root/build/* ./build-output/
