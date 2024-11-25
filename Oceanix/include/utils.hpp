@@ -4,8 +4,11 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <set>
 #include <json.hpp>
 #include "motorID.hpp"
+
+using json = nlohmann::json;
 
 std::string motorID_to_string(MotorID id);
 std::string floatToStringWithDecimals(float value, int n);

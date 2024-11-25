@@ -15,7 +15,8 @@ bool Nucleo::is_connected() { return m_protocol.is_connected(); }
 bool Nucleo::connect() { return m_protocol.connect(); }
 COMM_STATUS Nucleo::init(uint8_t frequency) { return m_protocol.init(frequency); }
 void Nucleo::disconnect() { m_protocol.disconnect(); }
-std::pair<COMM_STATUS, std::optional<std::vector<uint8_t>>> Nucleo::get_heartbeat() { return m_protocol.get_packet(0); }
+std::pair<COMM_STATUS, std::optional<std::vector<uint8_t>>> Nucleo::get_heartbeat() { return m_protocol.get_heartbeat(); }
+void Nucleo::update_buffer() { m_protocol.update_buffer(); }
 
 ssize_t Nucleo::send_pwm(uint16_t* pwm_values) {
     return m_protocol.send_packet(0, pwm_values, motorN);

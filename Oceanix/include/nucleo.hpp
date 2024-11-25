@@ -23,6 +23,7 @@ class Nucleo {
         ssize_t send_pwm(uint16_t* pwm_values);
         ssize_t send_arm(std::string arm_values);
         std::pair<COMM_STATUS, std::optional<std::vector<uint8_t>>> get_heartbeat(); // use auto
+        void update_buffer();
 
     private:
         Protocol m_protocol;

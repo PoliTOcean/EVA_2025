@@ -81,8 +81,8 @@ int main(){
 	while(!mqtt_client.mqtt_connect())
         sleep(1000);
 
-    Nucleo nucleo = Nucleo(1, 115200, 0x01, 0x01, general_config["verbose_nucleo"]);
-    nucleo.init(5);
+    Nucleo nucleo = Nucleo(0, 115200, 0x01, 0x00, general_config["verbose_nucleo"]);
+    nucleo.init(1);
 
     Sensor sensor = Sensor();
 
@@ -101,7 +101,7 @@ int main(){
 
     uv_timer_init(loop, &timer_motors);
     timer_motors.data = timer_data;
-    uv_timer_start(&timer_motors, timer_motors_callback, 100, 10); // 10 ms iniziali, 10 ms di intervallo
+    uv_timer_start(&timer_motors, timer_motors_callback, 100, 100); // 10 ms iniziali, 10 ms di intervallo
 
     uv_timer_init(loop, &timer_com);
     timer_com.data = timer_data;
@@ -136,6 +136,7 @@ void timer_motors_callback(uv_timer_t* handle) {
     motor_pwm = data->motors->calculate_pwm();
 
     data->nucleo->send_pwm(motor_pwm);
+    data->nucleo->update_buffer();
     data->nucleo->get_heartbeat();
 }
 
