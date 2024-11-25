@@ -120,6 +120,7 @@
     cursor: pointer;
     border-radius: 10px;
 }
+
 .rotate180 {
     -webkit-transform: rotate(180deg);
     -moz-transform: rotate(180deg);
@@ -257,7 +258,7 @@ img {
     padding: 5px 10px;
     border: none;
     border-radius: 5px;
-    background-color: #AE2E24;
+    background-color: #0055CC;
     color: #fff;
     cursor: pointer;
     text-align: center;
@@ -266,7 +267,7 @@ img {
 }
 
 .button:hover{
-    background-color: #AE2E24;
+    background-color: #0055CC;
 }
 
 
