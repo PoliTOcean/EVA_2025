@@ -29,7 +29,7 @@ jobs:
     - name: Compile in Raspberry Pi environment
       run: |
         sudo chroot rpi-root /bin/bash -c "apt update && apt install -y cmake g++ wiringpi"
-        sudo chroot rpi-root /bin/bash -c "mkdir /build && cd /build && cmake /src && make"
+        sudo chroot rpi-root /bin/bash -c "mkdir /build && cd /build && cmake .. && make"
 
     - name: Retrieve built artifacts
       run: sudo cp rpi-root/build/* ./build-output/
