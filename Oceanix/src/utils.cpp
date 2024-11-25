@@ -1,7 +1,5 @@
 #include "utils.hpp"
 
-using json = nlohmann::json;
-
 bool isJsonParseable(const std::string& str) {
     try {
         // Try to parse the string as JSON
@@ -15,22 +13,31 @@ bool isJsonParseable(const std::string& str) {
 
 bool checkJsonFormat(const std::string msg, json ref_json) {
     int correspond = 0;
+    if (!isJsonParseable(msg))
+            return false;
 
-        if (!isJsonParseable(msg))
-                return false;
+    json msg_json = json::parse(msg);
 
-        msg_json = json::parse(msg);
-        std::set<std::string> keys_msg(msg_json.begin(), msg_json.end());
-        std::set<std::string> keys_json(ref_json.begin(), ref_json.end());
+    std::set<std::string> keys_msg;
+    std::set<std::string> keys_json;
 
-        if (keys_msg == keys_json) {
-            for (int i = 0; i < keys_json.size(); i++) {
-                if (std::is_same<msg_json[i], ref_json[i]>::value) correspond++;
-            }
+    for (auto it = msg_json.begin(); it!=msg_json.end(); ++it)
+        keys_msg.insert(it.key());
+    for (auto it = ref_json.begin(); it!=ref_json.end(); ++it)
+        keys_json.insert(it.key());
+
+    if (keys_msg == keys_json) {
+        for (const auto& str : keys_json) {
+            if(ref_json[str].is_object())
+                if(!checkJsonFormat(msg_json[str].dump(), ref_json[str]))
+                    return false;
+
+            if (msg_json[str].type() == ref_json[str].type()) correspond++;
         }
+    }
 
-        // return keys_msg == keys_json
-        return correspond == keys_json.size();
+    // return keys_msg == keys_json
+    return correspond == keys_json.size();
 }
 
 
