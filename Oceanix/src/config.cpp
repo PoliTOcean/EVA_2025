@@ -14,7 +14,12 @@ Config::Config(std::string config_file_path) {
     load_base_config();
 }
 
-void Config::change_config(std::string msg_string) { m_json_config = json::parse(msg_string); }
+void Config::change_config(std::string msg_string) { 
+    if (!checkJsonFormat(msg_string, m_json_config))
+        std::cout << "[CONFIG - WARNING] Config json not parseble or wrong keys/key types!" << std::endl;
+    else
+        m_json_config = json::parse(msg_string); 
+}
     
 void Config::load_base_config() {
     std::ifstream json_config_file(m_config_file_path);
