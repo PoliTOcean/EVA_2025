@@ -44,8 +44,18 @@ fi
 # Check for wiringPi
 if ! dpkg -s wiringpi >/dev/null 2>&1; then
     echo "wiringPi is not installed. Installing wiringPi..."
-    sudo apt-get update
-    sudo apt-get install -y wiringpi
+    # fetch the source
+    sudo apt install git
+    git clone https://github.com/WiringPi/WiringPi.git
+    cd WiringPi
+
+    # build the package
+    ./build debian
+    mv debian-template/wiringpi-3.0-1.deb .
+
+    # install it
+    sudo apt install ./wiringpi-3.0-1.deb
+    cd ..
 else
     echo "wiringPi is already installed."
 fi
@@ -66,7 +76,7 @@ fi
 # fi
 
 # Navigate to the project directory
-cd Oceanix
+# cd Oceanix
 
 # Create a build directory
 mkdir -p build
