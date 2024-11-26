@@ -21,12 +21,12 @@ class Config : Logger{
         void load_base_config();
         void write_base_config(); 
         void change_config(std::string msg_string);
-        virtual void printLog(logLevel logtype, std::string message);
 
 
     private:
         json m_json_config; 
         std::string m_config_file_path;
+        virtual void printLog(logLevel logtype, std::string message);
 
 };
 

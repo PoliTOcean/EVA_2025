@@ -44,13 +44,14 @@ public:
      */
     float get_depth();
 
-    virtual void printLog(logLevel logtype, std::string message);
 
 private:
     int status;         ///< Status of the sensor.
     float pressure_baseline; ///< Pressure baseline.
     float temperature;  ///< Temperature in Celsius.
     float depth;        ///< Depth in meters.
+    virtual void printLog(logLevel logtype, std::string message);
+
 };
 
 #endif // BAR02_H

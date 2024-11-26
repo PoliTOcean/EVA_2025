@@ -26,7 +26,6 @@ class MQTTClient : Logger{
         bool receive_msg(std::pair <Topic, json>* msgp);
         bool send_debug(json debug_json); // Add mask
         bool is_msg_type(Topic topic2, Topic topic1);
-        virtual void printLog(logLevel logtype, std::string message);
 
     private:
         std::string m_server_address;
@@ -37,6 +36,8 @@ class MQTTClient : Logger{
         bool m_verbose;
 
         msg_pt m_msg;
+
+        virtual void printLog(logLevel logtype, std::string message);
 };
 
 #endif // MQTTCLIENT_H

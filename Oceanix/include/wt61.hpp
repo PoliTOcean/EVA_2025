@@ -67,7 +67,6 @@ public:
      * @return float* array for the gyroscope (x, y, z) in DEG/s^2
      */
     float* get_gyro();
-    virtual void printLog(logLevel logtype, std::string message);
 
 
 private:
@@ -78,6 +77,8 @@ private:
     float yaw;          ///< yaw angle in DEG
     float acc[3];       ///< accelleration (x, y, z) in m/s^2
     float gyro[3];      ///< gyroscope (x, y, z) in DEG/s^2
+
+    virtual void printLog(logLevel logtype, std::string message);    
 };
 
 #endif // WT61_H

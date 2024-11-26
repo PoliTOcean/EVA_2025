@@ -39,6 +39,8 @@ private:
     ControlSystemZ control_z;           /// Pointer to ControlSystemZ object
     ControlSystemPITCH control_pitch;   /// Pointer to ControlSystemPitch object
     ControlSystemROLL control_roll;     /// Pointer to ControlSystemRoll object
+    virtual void printLog(logLevel logtype, std::string message);
+
 
 public:
     /**
@@ -91,8 +93,6 @@ public:
      * @param debug json doc for adding the informations
      */
     void update_debug(json& debug);
-
-    virtual void printLog(logLevel logtype, std::string message);
 };
 
 #endif // CONTROLLER_H

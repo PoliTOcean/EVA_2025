@@ -70,7 +70,6 @@ public:
      * @param offset is the value added to current thrust max
      */
     void offset_thrust_max(float offset);
-    virtual void printLog(logLevel logtype, std::string message);
 
 
 private:
@@ -105,6 +104,7 @@ private:
      * @return float the value of the thrust
      */
     float limit_thrust(float thrust, float thrust_max);
+    virtual void printLog(logLevel logtype, std::string message);
 };
 
 #endif
