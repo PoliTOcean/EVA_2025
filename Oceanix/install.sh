@@ -141,6 +141,6 @@ cmake ..
 
 # Run Make
 echo "Running Make..."
-make ..
+make .
 
 echo "Installation and build process completed."
