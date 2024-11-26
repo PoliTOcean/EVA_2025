@@ -26,7 +26,7 @@ fi
 if ! command_exists cmake; then
     echo "CMake is not installed. Installing CMake..."
     $SUDO apt-get update
-    $SUDO apt-get install -y build-essential cmake
+    $SUDO apt-get install -y build-essential cmake pkg-config
     $SUDO cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++
 else
     echo "CMake is already installed."
@@ -94,8 +94,8 @@ if ! dpkg -s libpaho-mqtt-dev libpaho-mqttpp-dev >/dev/null 2>&1; then
     $SUDO make -j$(nproc)
 
     # Install the library
-    $SUDO sudo make install
-    $SUDO sudo ldconfig
+    $SUDO make install
+    $SUDO ldconfig
 
     $SUDO cd ../../paho.mqtt.cpp
 
@@ -108,8 +108,8 @@ if ! dpkg -s libpaho-mqtt-dev libpaho-mqttpp-dev >/dev/null 2>&1; then
     $SUDO make -j$(nproc)
 
     # Install the library
-    $SUDO sudo make install
-    $SUDO sudo ldconfig
+    $SUDO make install
+    $SUDO ldconfig
 
     $SUDO cd ../../
 
