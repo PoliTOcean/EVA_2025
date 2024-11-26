@@ -35,9 +35,18 @@ jobs:
       run: |
         sudo chroot rpi-root /bin/bash -c "cd EVA && chmod +x install.sh && ./install.sh"
 
-    - name: Retrieve built artifacts
+    - name: Retrieve and commit built artifacts
       run: |
-        sudo pwd
-        sudo ls -l
-        sudo ls ${GITHUB_WORKSPACE}/
-        sudo cp -r ${GITHUB_WORKSPACE}/rpi-root/EVA/build/* ./build-output/
+        sudo mkdir -p ${GITHUB_WORKSPACE}/build  # Ensure the build directory exists
+        sudo cp -r ${GITHUB_WORKSPACE}/rpi-root/EVA/build/* ${GITHUB_WORKSPACE}/build/
+        sudo chown -R $(whoami):$(whoami) ${GITHUB_WORKSPACE}/build  # Fix ownership for git commit
+        sudo rm -r ${GITHUB_WORKSPACE}/rpi-root
+
+    - name: Commit and push artifacts
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git add build/
+        git commit -m "Add build artifacts [skip ci]"
+        git push origin HEAD:${{ github.ref_name }}
+
