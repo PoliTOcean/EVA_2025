@@ -27,7 +27,7 @@ jobs:
         sudo chroot rpi-root /bin/bash -c "debootstrap/debootstrap --second-stage"
 
     - name: Copy Repository to rpi-root
-      run: sudo cp -r ${GITHUB_WORKSPACE} rpi-root/EVA
+      run: sudo cp -r ${GITHUB_WORKSPACE}/* rpi-root/EVA/
 
     - name: Compile in Raspberry Pi environment
       run: |
