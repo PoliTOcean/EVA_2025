@@ -26,7 +26,8 @@ fi
 if ! command_exists cmake; then
     echo "CMake is not installed. Installing CMake..."
     $SUDO apt-get update
-    $SUDO apt-get install -y cmake
+    $SUDO apt-get install -y build-essential cmake
+    $SUDO cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++
 else
     echo "CMake is already installed."
 fi
@@ -80,8 +81,40 @@ fi
 # Check for Eclipse Paho MQTT C and C++ libraries
 if ! dpkg -s libpaho-mqtt-dev libpaho-mqttpp-dev >/dev/null 2>&1; then
     echo "Eclipse Paho MQTT libraries are not installed. Installing Eclipse Paho MQTT libraries..."
-    $SUDO apt-get update
-    $SUDO apt-get install -y libpaho-mqtt-dev libpaho-mqttpp-dev
+    $SUDO git clone https://github.com/eclipse/paho.mqtt.cpp.git
+    $SUDO git clone https://github.com/eclipse/paho.mqtt.c.git
+    $SUDO cd paho.mqtt.c
+
+    # Create a build directory
+    $SUDO mkdir build
+    $SUDO cd build
+
+    # Configure and build
+    $SUDO cmake .. -DPAHO_WITH_SSL=ON -DPAHO_BUILD_STATIC=ON -DPAHO_BUILD_DOCUMENTATION=OFF
+    $SUDO make -j$(nproc)
+
+    # Install the library
+    $SUDO sudo make install
+    $SUDO sudo ldconfig
+
+    $SUDO cd ../../paho.mqtt.cpp
+
+    # Create a build directory
+    $SUDO mkdir build
+    $SUDO cd build
+
+    # Configure and build
+    $SUDO cmake .. -DPAHO_BUILD_DOCUMENTATION=OFF -DPAHO_WITH_SSL=ON
+    $SUDO make -j$(nproc)
+
+    # Install the library
+    $SUDO sudo make install
+    $SUDO sudo ldconfig
+
+    $SUDO cd ../../
+
+    echo "Verify MQTT install..."
+    $SUDO ls /usr/local/lib | grep paho
 else
     echo "Eclipse Paho MQTT libraries are already installed."
 fi
