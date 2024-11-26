@@ -130,17 +130,17 @@ fi
 
 # Create a build directory
 mkdir -p build
-cd build
+#cd build
 
 echo "pwd:"
 pwd
 
 # Run CMake
 echo "Running CMake..."
-cmake ..
+cmake -S . -B build
 
 # Run Make
 echo "Running Make..."
-make .
+cmake --build build
 
 echo "Installation and build process completed."
