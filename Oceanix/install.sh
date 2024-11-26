@@ -5,18 +5,19 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
-# Check for sudo
+SUDO = "SUDO"
+
+# Check for SUDO
 if ! command_exists sudo; then
-    echo "sudo not working.. change PATH variable"
-    PATH=$PATH/usr/bin
-    echo $PATH
+    echo "SUDO is not installed. Running commands without SUDO."
+    SUDO=""
 fi
 
 # Check for Git
 if ! command_exists git; then
     echo "Git is not installed. Installing Git..."
-    sudo apt-get update
-    sudo apt-get install -y git
+    $SUDO apt-get update
+    $SUDO apt-get install -y git
 else
     echo "Git is already installed."
 fi
@@ -24,8 +25,8 @@ fi
 # Check for CMake
 if ! command_exists cmake; then
     echo "CMake is not installed. Installing CMake..."
-    sudo apt-get update
-    sudo apt-get install -y cmake
+    $SUDO apt-get update
+    $SUDO apt-get install -y cmake
 else
     echo "CMake is already installed."
 fi
@@ -33,8 +34,8 @@ fi
 # Check for GCC
 if ! command_exists gcc; then
     echo "GCC is not installed. Installing GCC..."
-    sudo apt-get update
-    sudo apt-get install -y gcc g++
+    $SUDO apt-get update
+    $SUDO apt-get install -y gcc g++
 else
     echo "GCC is already installed."
 fi
@@ -42,8 +43,8 @@ fi
 # Check for OpenSSL
 if ! dpkg -s libssl-dev >/dev/null 2>&1; then
     echo "OpenSSL is not installed. Installing OpenSSL..."
-    sudo apt-get update
-    sudo apt-get install -y libssl-dev
+    $SUDO apt-get update
+    $SUDO apt-get install -y libssl-dev
 else
     echo "OpenSSL is already installed."
 fi
@@ -51,8 +52,8 @@ fi
 # Check for libuv
 if ! dpkg -s libuv1-dev >/dev/null 2>&1; then
     echo "libuv is not installed. Installing libuv..."
-    sudo apt-get update
-    sudo apt-get install -y libuv1-dev
+    $SUDO apt-get update
+    $SUDO apt-get install -y libuv1-dev
 else
     echo "libuv is already installed."
 fi
@@ -61,7 +62,7 @@ fi
 if ! dpkg -s wiringpi >/dev/null 2>&1; then
     echo "wiringPi is not installed. Installing wiringPi..."
     # fetch the source
-    sudo apt install git
+    $SUDO apt install git
     git clone https://github.com/WiringPi/WiringPi.git
     cd WiringPi
 
@@ -70,7 +71,7 @@ if ! dpkg -s wiringpi >/dev/null 2>&1; then
     mv debian-template/wiringpi-3.0-1.deb .
 
     # install it
-    sudo apt install ./wiringpi-3.0-1.deb
+    $SUDO apt install ./wiringpi-3.0-1.deb
     cd ..
 else
     echo "wiringPi is already installed."
@@ -79,8 +80,8 @@ fi
 # Check for Eclipse Paho MQTT C and C++ libraries
 if ! dpkg -s libpaho-mqtt-dev libpaho-mqttpp-dev >/dev/null 2>&1; then
     echo "Eclipse Paho MQTT libraries are not installed. Installing Eclipse Paho MQTT libraries..."
-    sudo apt-get update
-    sudo apt-get install -y libpaho-mqtt-dev libpaho-mqttpp-dev
+    $SUDO apt-get update
+    $SUDO apt-get install -y libpaho-mqtt-dev libpaho-mqttpp-dev
 else
     echo "Eclipse Paho MQTT libraries are already installed."
 fi
