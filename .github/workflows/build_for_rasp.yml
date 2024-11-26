@@ -28,7 +28,7 @@ jobs:
 
     - name: Compile in Raspberry Pi environment
       run: |
-        sudo chroot rpi-root /bin/bash -c "cd /home/ && ls -l && pwd && chmod +x install.sh && ./install.sh"
+        sudo chroot rpi-root /bin/bash -c "cd /home/runner && ls -l && pwd && chmod +x install.sh && ./install.sh"
 
     - name: Retrieve built artifacts
       run: sudo cp rpi-root/build/* ./build-output/
