@@ -132,12 +132,15 @@ fi
 mkdir -p build
 cd build
 
+echo "pwd:"
+pwd
+
 # Run CMake
 echo "Running CMake..."
 cmake ..
 
 # Run Make
 echo "Running Make..."
-make
+make ..
 
 echo "Installation and build process completed."
