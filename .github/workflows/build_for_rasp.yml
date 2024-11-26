@@ -21,14 +21,17 @@ jobs:
 
     - name: Setup Raspberry Pi environment
       run: |
-        mkdir rpi-root
+        sudo mkdir rpi-root
         sudo debootstrap --arch=armhf --foreign buster rpi-root http://archive.raspbian.org/raspbian
         sudo cp /usr/bin/qemu-arm-static rpi-root/usr/bin/
         sudo chroot rpi-root /bin/bash -c "debootstrap/debootstrap --second-stage"
 
+    - name: Copy Repository to rpi-root
+      run: sudo cp -r ${GITHUB_WORKSPACE} rpi-root/EVA
+
     - name: Compile in Raspberry Pi environment
       run: |
-        sudo chroot rpi-root /bin/bash -c "cd ${${GITHUB_WORKSPACE}} && ls -l && pwd && chmod +x install.sh && ./install.sh"
+        sudo chroot rpi-root /bin/bash -c "ls -l && cd /EVA/Oceanix && ls -l && pwd && chmod +x install.sh && ./install.sh"
 
     - name: Retrieve built artifacts
-      run: sudo cp rpi-root/build/* ./build-output/
+      run: sudo cp rpi-root/Oceanix/build/* ./build-output/
