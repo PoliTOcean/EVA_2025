@@ -5,6 +5,22 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
+# Check for sudo
+if ! command_exists sudo; then
+    echo "sudo not working.. change PATH variable"
+    PATH=$PATH/usr/bin
+    echo $PATH
+fi
+
+# Check for Git
+if ! command_exists git; then
+    echo "Git is not installed. Installing Git..."
+    sudo apt-get update
+    sudo apt-get install -y git
+else
+    echo "Git is already installed."
+fi
+
 # Check for CMake
 if ! command_exists cmake; then
     echo "CMake is not installed. Installing CMake..."
