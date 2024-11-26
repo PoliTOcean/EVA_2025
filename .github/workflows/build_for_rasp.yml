@@ -28,7 +28,7 @@ jobs:
 
     - name: Copy Repository to rpi-root
       run: |
-        mkdir -p rpi-root/EVA/
+        sudo mkdir -p rpi-root/EVA/
         sudo cp -r ${GITHUB_WORKSPACE}/* rpi-root/EVA/
 
     - name: Compile in Raspberry Pi environment
