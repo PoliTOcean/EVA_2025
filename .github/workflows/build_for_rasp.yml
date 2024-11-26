@@ -33,7 +33,11 @@ jobs:
 
     - name: Compile in Raspberry Pi environment
       run: |
-        sudo chroot rpi-root /bin/bash -c "ls -l && cd EVA && ls -l && pwd && chmod +x install.sh && ./install.sh"
+        sudo chroot rpi-root /bin/bash -c "cd EVA && chmod +x install.sh && ./install.sh"
 
     - name: Retrieve built artifacts
-      run: sudo cp rpi-root/Oceanix/build/* ./build-output/
+      run: |
+        sudo pwd
+        sudo ls -l
+        sudo ls ${GITHUB_WORKSPACE}/
+        sudo cp -r ${GITHUB_WORKSPACE}/rpi-root/EVA/build/* ./build-output/
