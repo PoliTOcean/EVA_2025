@@ -1,6 +1,6 @@
 #include "nucleo.hpp"
 
-Nucleo::Nucleo(uint8_t address, uint8_t baudrate, uint8_t version, uint8_t sub_version, bool verbose)
+Nucleo::Nucleo(uint8_t address, int baudrate, uint8_t version, uint8_t sub_version, bool verbose)
     : m_protocol(version, sub_version, address, baudrate, verbose) {
     
     m_init_mapper();

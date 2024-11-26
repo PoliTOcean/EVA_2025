@@ -14,7 +14,7 @@ using json = nlohmann::json;
 
 class Nucleo {
     public:
-        Nucleo(uint8_t address, uint8_t baudrate, uint8_t version, uint8_t sub_version, bool verbose = false);
+        Nucleo(uint8_t address, int baudrate, uint8_t version, uint8_t sub_version, bool verbose = false);
 
         bool is_connected();
         COMM_STATUS init(uint8_t frequency);
