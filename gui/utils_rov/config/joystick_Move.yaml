@@ -12,7 +12,7 @@ buttons:
     onPress: "CLOSE_NIPPER"
     onRelease: "STOP_NIPPER"
   Back:
-    onPress: "{CHANGE_CONTROLLER_STATUS: K}"
+    onPress: "CHANGE_CONTROLLER_STATUS"
     onRelease:
   Guide: 
     onPress:
@@ -45,7 +45,7 @@ buttons:
     onPress: "DPAD_RIGHT"
     onRelease:
   UPLOAD:
-    onPress: "{ARM_ROV: K}"
+    onPress: "ARM"
     onRelease:
 axes:
   LSB-X: "Y"

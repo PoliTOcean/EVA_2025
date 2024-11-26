@@ -33,8 +33,8 @@ class ROVController():
                                 }
         self.armed = 0
         self.d_pad = {
-            "UP" : "{THRUST_MAX_OFFSET: 0.1}",
-            "DOWN" : "{THRUST_MAX_OFFSET: -0.1}",
+            "UP" : "TRIM_PITCH_FORWARD",
+            "DOWN" : "TRIM_PITCH_BACKWARD",
             "LEFT" : "TRIM_ROLL_LEFT",
             "RIGHT" : "TRIM_ROLL_RIGHT"
         }
@@ -105,15 +105,15 @@ class ROVController():
     def __on_buttonChanged(self, id_button, state):
         if id_button == "GUIDE":   #altrimenti quando si preme uno dei due assi crasha
             return
-        # if id_button == "UPLOAD": #ARM
-        #     if state:
-        #         if self.armed:
-        #             command = "DISARM"
-        #         else:
-        #             command = "ARM"
-        #         self.armed = not self.armed
-        #     else:
-        #         return
+        if id_button == "UPLOAD": #ARM
+            if state:
+                if self.armed:
+                    command = "DISARM"
+                else:
+                    command = "ARM"
+                self.armed = not self.armed
+            else:
+                return
         elif state:
             command = self.__joystick.commands["buttons"][id_button]["onPress"]
         else:
