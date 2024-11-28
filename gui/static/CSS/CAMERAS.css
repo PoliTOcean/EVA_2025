@@ -80,6 +80,12 @@
     gap: 10px;
 }
 
+.image_container{
+    padding: 10px 10px 10px 10px;
+    border-radius: 10px;
+    position: relative;
+}
+
 .rotate90 {
     -webkit-transform: rotate(90deg);
     -moz-transform: rotate(90deg);

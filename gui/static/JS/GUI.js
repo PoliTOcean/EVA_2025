@@ -2,7 +2,7 @@ let info;
 let script = document.currentScript;
 let fullUrl = script.src;
 let jsonUrl = fullUrl.replace("JS/GUI.js", "info.json");
-let pages = ["ROV", "FLOAT", "PID", "TASK_1"];
+let pages = ["ROV", "FLOAT", "PID", "TASK_1", "CAMERAS"];
 let stsObj;
 
 // [UTILS]
@@ -25,6 +25,7 @@ async function postRequest(url, data) {
             'Accept': 'application/json',
         },
         body: JSON.stringify(data)
+
     })
     return response.json();
 }
@@ -40,34 +41,61 @@ function keep_alive_server() {
 
 // [DYNAMIC PAGES HANDLER]
 async function change(page) {
-    if (page == page_now) return;
-    if (page_now !== "home") document.getElementsByClassName(page_now)[0].classList.toggle("hide");
-    document.getElementsByClassName(page)[0].classList.toggle("hide");
+    if (page === page_now) return; // Avoid redundant switching
+
+    // Hide the current page
+
+    if (page_now !== "home") {
+        const currentPageElement = document.getElementsByClassName(page_now)[0];
+        if (currentPageElement) currentPageElement.classList.add("hide");
+    }
+
+    // Show the target page
+    const newPageElement = document.getElementsByClassName(page)[0];
+    if (newPageElement) {
+        newPageElement.classList.remove("hide");
+    } else {
+        console.warn(`Page ${page} not loaded yet.`);
+    }
+
+    // Update the current page tracker
     page_now = page;
 }
 
 async function loadPages(page) {
-    page_now = pages[page];
+
     const newpage = await (await fetch(page)).text();
     let parser = new DOMParser();
     let html = parser.parseFromString(newpage, "text/html");
-    let wh = document.querySelectorAll(".window")[0];
-    wh.append(html.body.firstChild);
+    let newPageContent = html.body.firstChild;
+
+
+    // Add the 'hide' class to the new page to make it invisible initially
+    newPageContent.classList.add("hide");
+
+    // Append the new page's content to the `.window` container
+
+    let wh = document.querySelector(".window");
+    wh.append(newPageContent);
 }
 
 const container = document.querySelector('.window');
 
 const observer = new MutationObserver((mutationsList) => {
+
     for (const mutation of mutationsList) {
         if (mutation.type === 'childList') {
             const pid = container.querySelector("#PID_form");
+
             const task = container.querySelector("#TASK_1_FORM");
             // Se l'ultima pagina è pronta, carica i contenuti in tutte le pagine
             if (task && pid) {
+
                 ROVLoader();
                 Task1Loader();
                 PIDLoader();
                 observer.disconnect();
+
             }
         }
     }
@@ -84,6 +112,7 @@ observer.observe(container, { childList: true });
 async function statusController() {
     let response = await fetch("/CONTROLLER/start_status");
     let status = await response.json();
+
     console.log(status);
     updateStatusesROV({"JOYSTICK": status["status"]});
 }
@@ -96,27 +125,29 @@ async function statusController() {
 // [MAIN]
 
 window.onload = async () => {
-    // Force dimensions of window
     let h = window.innerHeight;
     let w = window.innerWidth;
-    let body = document.getElementsByTagName('body')[0];
+
+    let body = document.getElementsByTagName("body")[0];
     body.style.width = `${w}px`; 
     body.style.height = `${h}px`;
 
-    // Load Info and divide
+    // Load info and statuses
     info = await getRequest(jsonUrl);
-    console.log(info)
     stsObj = info["statuses"].reduce((obj, key) => {
         obj[key] = false;
         return obj;
     }, {});
 
+    // Load all pages, including "Cameras"
+    for (let i = 0; i < pages.length; i++) {
+        await loadPages(pages[i]);
+    }
 
-    // Load pages    
-    for (let i = 0; i < pages.length; i++) loadPages(pages[i]);
+    // Set the initial page
     page_now = "home";
-       
-    // Routines
+
+    // Start routines
     let refresh = 2000;
     setInterval(() => statusFLOAT("STATUS"), refresh);
     setInterval(statusController, refresh);

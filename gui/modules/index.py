@@ -24,6 +24,10 @@ def task_1():
 @app.route("/TASK_2")
 def task_2():
     return render_template("TASK_2.html")
+    
+@app.route("/CAMERAS")
+def cameras():
+    return render_template("CAMERAS.html")
 
 
 # ! TO REMOVE
