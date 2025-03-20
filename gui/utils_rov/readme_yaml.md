@@ -47,15 +47,17 @@ The shift button is like the shift on the keyboard, when it is pressed each othe
 The command Able/Disable allows the pilot to use or not pitch and roll commands, to use them just when he needs, when disable the ROV become stable and horizontal again.
 
 It is also possible to send fixed value through buttons, and change this value with the shift button, as explained before. (ex value= 10000, onShiftValue=3000, so when shift it pressed the movement will be slower and more precise)
- 
+
+ ```
   LB:
     onPress: "YAW"
     onRelease: "YAW"
     topic: "state_commands"
-    onShiftRelease: 
-    onShiftPress:
+    onShiftRelease:  "YAW"
+    onShiftPress: "YAW"
     value: 10000
     onShiftValue: 3000
+```
     
 -Code Example with LB button that change the value when shift is pressed
 
