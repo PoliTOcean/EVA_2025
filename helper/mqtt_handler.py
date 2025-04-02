@@ -1,7 +1,8 @@
-# mqtt_handler.py
 import paho.mqtt.client as mqtt
 import json
 import threading
+import os
+from datetime import datetime
 
 # Global MQTT client
 mqtt_client = None
@@ -42,10 +43,10 @@ def initialize_mqtt(broker, topic_config, topic_commands, topic_axes, topic_stat
     mqtt_thread.daemon = True
     mqtt_thread.start()
 
-    mqtt_client.subscribe(topic_config)
-    # mqtt_client.subscribe(topic_commands)
+    mqtt_client.subscribe(MQTT_TOPIC_CONFIG)
     mqtt_client.subscribe(MQTT_TOPIC_LOG)
-    mqtt_client.subscribe(topic_status)
+    mqtt_client.subscribe(MQTT_TOPIC_STATUS)
+    mqtt_client.subscribe(MQTT_TOPIC_COMMANDS)
     return result
 
 def on_connect(client, userdata, flags, rc):
@@ -68,11 +69,14 @@ def on_message(client, userdata, msg):
             print("Failed to decode JSON message")
 
 def register_callback(callback):
+    """
+    Register a callback function that accepts (message, topic) parameters.
+    """
     mqtt_callbacks.append(callback)
 
 def unregister_callback(callback):
     mqtt_callbacks.remove(callback)
-    
+
 def mqtt_send_message(topic, payload):
     if mqtt_client is not None:
         mqtt_client.publish(topic, json.dumps(payload))

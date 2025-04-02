@@ -8,6 +8,7 @@ from debug_mqtt_viewer_page import DebugMQTTViewerPage
 from send_test_mqtt_page import SendTestMQTTPage
 from update_configuration_page import UpdateConfigurationPage
 from logger_page import LoggerPage
+from cameras_page import CamerasPage
 
 class MainApp(tk.Tk):
     def __init__(self):
@@ -23,7 +24,8 @@ class MainApp(tk.Tk):
         tk.Button(nav_bar, text="Status Viewer", command=lambda: self.show_frame("DebugMQTTViewerPage")).pack(side="left", padx=5, pady=5)
         tk.Button(nav_bar, text="Send Test MQTT", command=lambda: self.show_frame("SendTestMQTTPage")).pack(side="left", padx=5, pady=5)
         tk.Button(nav_bar, text="Update Config", command=lambda: self.show_frame("UpdateConfigurationPage")).pack(side="left", padx=5, pady=5)
-        tk.Button(nav_bar, text="Logger", command=lambda: self.show_frame("LoggerPage")).pack(side="left", padx=5, pady=5) 
+        tk.Button(nav_bar, text="Logger", command=lambda: self.show_frame("LoggerPage")).pack(side="left", padx=5, pady=5)
+        tk.Button(nav_bar, text="Cameras", command=lambda: self.show_frame("CamerasPage")).pack(side="left", padx=5, pady=5)
 
         # Create a container for the frames
         container = ttk.Frame(self)
@@ -32,7 +34,7 @@ class MainApp(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (MQTTConfigPage, DebugMQTTViewerPage, SendTestMQTTPage, UpdateConfigurationPage, LoggerPage): 
+        for F in (MQTTConfigPage, DebugMQTTViewerPage, SendTestMQTTPage, UpdateConfigurationPage, LoggerPage, CamerasPage): 
             page_name = F.__name__
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
