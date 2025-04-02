@@ -1,2 +1,0 @@
-joystick: !include joystick_Move.yaml
-mqtt: !include mqtt.yaml
