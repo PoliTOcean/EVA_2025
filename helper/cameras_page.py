@@ -42,7 +42,7 @@ class CamerasPage(tk.Frame):
         """
         Handles incoming MQTT messages for camera commands.
         """
-        if topic != mqtt_handler.MQTT_TOPIC_CAMERA:
+        if topic != mqtt_handler.MQTT_TOPIC_COMMANDS:
             return
         command = message.get("command")
         if command and command.startswith("PHOTO_CAMERA_"):

@@ -22,3 +22,6 @@ __pychache__
 dist
 build
 *.pytest_cache
+
+photos
+venv
