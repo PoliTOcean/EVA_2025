@@ -72,9 +72,9 @@ class DebugMQTTViewerPage(tk.Frame):
         for i, key in enumerate(motor_keys):
             x = i * 70 + 45  # Adjusted to make the bars thicker and closer
             self.motor_labels[key] = self.canvas.create_rectangle(x-15, 200, x+15, 200, fill="blue")
-            self.pwm_labels[key] = self.canvas.create_text(x, 350, text="PWM: N/A", font=("Arial", 10))
+            self.pwm_labels[key] = self.canvas.create_text(x, 350, text="N/A", font=("Arial", 10))
             self.canvas.create_text(x, 370, text=key, font=("Arial", 10))
-            self.thrust_text_labels[key] = self.canvas.create_text(x, 390, text="Thrust: N/A", font=("Arial", 10))
+            self.thrust_text_labels[key] = self.canvas.create_text(x, 390, text="N/A", font=("Arial", 10))
 
         register_callback(self.update_data)
 
@@ -102,7 +102,7 @@ class DebugMQTTViewerPage(tk.Frame):
         for key, var in self.pwm_vars.items():
             pwm = pwm_values.get(key, "N/A")
             var.set(pwm)
-            self.canvas.itemconfig(self.pwm_labels[key], text=f"PWM: {pwm}")
+            self.canvas.itemconfig(self.pwm_labels[key], text=f"{pwm}")
 
         self.depth_var.set(message.get("depth", "N/A"))
         self.Zspeed_var.set(message.get("Zspeed", "N/A"))
@@ -123,7 +123,7 @@ class DebugMQTTViewerPage(tk.Frame):
         height = 200 - (thrust * 50)  # 50 pixels per unit thrust
         x = self.canvas.coords(self.motor_labels[motor])[0] + 15
         self.canvas.coords(self.motor_labels[motor], x-15, height, x+15, 200)
-        self.canvas.itemconfig(self.thrust_text_labels[motor], text=f"Thrust: {thrust:.2f}")
+        self.canvas.itemconfig(self.thrust_text_labels[motor], text=f"{thrust:.2f}")
 
     def __del__(self):
         unregister_callback(self.update_data)
