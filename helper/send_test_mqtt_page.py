@@ -92,25 +92,25 @@ class SendTestMQTTPage(tk.Frame):
         })
         
     def rotate_wrist_ccw(self):
-        self.send_message(MQTT_TOPIC_ARM, {"command": "ROTATE_WRIST_CCW"})
+        self.send_message(MQTT_TOPIC_ARM, {"ROTATE_WRIST_CCW": 0})
 
     def rotate_wrist_cw(self):
-        self.send_message(MQTT_TOPIC_ARM, {"command": "ROTATE_WRIST_CW"})
+        self.send_message(MQTT_TOPIC_ARM, {"ROTATE_WRIST_CW": 0})
 
     def stop_wrist(self):
-        self.send_message(MQTT_TOPIC_ARM, {"command": "STOP_WRIST"})
+        self.send_message(MQTT_TOPIC_ARM, {"STOP_WRIST": 0})
 
     def open_nipper(self):
-        self.send_message(MQTT_TOPIC_ARM, {"command": "OPEN_NIPPER"})
+        self.send_message(MQTT_TOPIC_ARM, {"OPEN_NIPPER": 0})
 
     def close_nipper(self):
-        self.send_message(MQTT_TOPIC_ARM, {"command": "CLOSE_NIPPER"})
+        self.send_message(MQTT_TOPIC_ARM, {"CLOSE_NIPPER": 0})
 
     def stop_nipper(self):
-        self.send_message(MQTT_TOPIC_ARM, {"command": "STOP_NIPPER"})
+        self.send_message(MQTT_TOPIC_ARM, {"STOP_NIPPER": 0})
 
     def torque_wrist_on(self):
-        self.send_message(MQTT_TOPIC_ARM, {"command": "TORQUE_WRIST_ON"})
+        self.send_message(MQTT_TOPIC_ARM, {"TORQUE_WRIST_ON": 0})
 
     def torque_wrist_off(self):
-        self.send_message(MQTT_TOPIC_ARM, {"command": "TORQUE_WRIST_OFF"})
+        self.send_message(MQTT_TOPIC_ARM, {"TORQUE_WRIST_OFF": 0})
