@@ -1,2 +1,4 @@
 paho_mqtt==2.1.0
 requests
+numpy==2.2.5
+scipy==1.15.2
