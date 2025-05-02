@@ -56,6 +56,13 @@ class SendTestMQTTPage(tk.Frame):
 
     def send_axes_zero(self):
         self.send_message(MQTT_TOPIC_AXES, {"X": 0, "Y": 0, "Z": 0, "PITCH": 0, "ROLL": 0, "YAW": 0})
+        # Reset sliders to 0
+        self.slider_x.set(0)
+        self.slider_y.set(0)
+        self.slider_z.set(0)
+        self.slider_pitch.set(0)
+        self.slider_roll.set(0)
+        self.slider_yaw.set(0)
 
     def send_axes_x(self):
         self.send_message(MQTT_TOPIC_AXES, {"X": 10000, "Y": 0, "Z": 0, "PITCH": 0, "ROLL": 0, "YAW": 0})
