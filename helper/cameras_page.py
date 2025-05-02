@@ -16,10 +16,10 @@ class CamerasPage(tk.Frame):
         mqtt_handler.register_callback(self.mqtt_camera_callback)
 
         self.camera_ports = {
-            "CAMERA_1": 8080,
-            "CAMERA_2": 8079,
-            "CAMERA_3": 8078,
-            "CAMERA_4": 8077
+            "1": 8080,
+            "2": 8079,
+            "3": 8078,
+            "4": 8077
         }
 
         tk.Label(self, text="Cameras Page", font=("Arial", 16)).pack(pady=10)
@@ -29,7 +29,7 @@ class CamerasPage(tk.Frame):
 
         for camera in self.camera_ports.keys():
             tk.Button(button_frame, 
-                      text=f"Take Photo {camera}",
+                      text=f"Take Photo Camera {camera}",
                       command=lambda c=camera: self.take_photo(c)
                      ).pack(pady=5, fill='x')
 
@@ -44,7 +44,7 @@ class CamerasPage(tk.Frame):
         """
         if topic != mqtt_handler.MQTT_TOPIC_COMMANDS:
             return
-        command = message.get("command")
+        command = message.popitem()[0]
         if command and command.startswith("PHOTO_CAMERA_"):
             cameras = command.split("_")[2:]
             threads = []
@@ -62,15 +62,15 @@ class CamerasPage(tk.Frame):
             response = requests.get(url)
             if response.status_code == 200:
                 self.save_photo(camera, response.content)
-                messagebox.showinfo("Success", f"Photo taken from {camera} and saved successfully.")
+                #messagebox.showinfo("Success", f"Photo taken from {camera} and saved successfully.")
             else:
                 messagebox.showerror("Error", f"Failed to take photo from {camera} (status code: {response.status_code})")
         except requests.RequestException as e:
             messagebox.showerror("Error", f"Error taking photo from {camera}: {e}")
 
     def take_photo_camera_1_2(self):
-        thread1 = threading.Thread(target=self.take_photo, args=("CAMERA_1",))
-        thread2 = threading.Thread(target=self.take_photo, args=("CAMERA_2",))
+        thread1 = threading.Thread(target=self.take_photo, args=("1",))
+        thread2 = threading.Thread(target=self.take_photo, args=("2",))
         thread1.start()
         thread2.start()
 
