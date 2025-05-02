@@ -24,8 +24,6 @@ class SendTestMQTTPage(tk.Frame):
         self.depth_entry.insert(0, "0.0")
         tk.Button(depth_frame, text="Update Depth", command=self.update_depth_reference).pack(side=tk.LEFT, padx=5)
         
-        tk.Button(self, text="Send motors slider values", command=self.send_custom_axes).grid(row=6, column=0, padx=10, pady=10)
-        
         # Sliders for custom values
         self.slider_x = self.create_slider("X", 7)
         self.slider_y = self.create_slider("Y", 8)
@@ -46,7 +44,7 @@ class SendTestMQTTPage(tk.Frame):
 
     def create_slider(self, label, row):
         tk.Label(self, text=label).grid(row=row, column=0, padx=10, pady=5)
-        slider = tk.Scale(self, from_=-32000, to=32000, orient=tk.HORIZONTAL)
+        slider = tk.Scale(self, from_=-32000, to=32000, orient=tk.HORIZONTAL, command=self.send_custom_axes)
         slider.grid(row=row, column=1, padx=10, pady=5)
         return slider
 
@@ -75,7 +73,8 @@ class SendTestMQTTPage(tk.Frame):
         except ValueError:
             print("Invalid depth value. Please enter a number.")
 
-    def send_custom_axes(self):
+    # Add a dummy argument `_` to handle the value passed by the Scale command
+    def send_custom_axes(self, _=None): 
         x_value = self.slider_x.get()
         y_value = self.slider_y.get()
         z_value = self.slider_z.get()

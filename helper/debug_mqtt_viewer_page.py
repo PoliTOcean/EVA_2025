@@ -17,7 +17,9 @@ class DebugMQTTViewerPage(tk.Frame):
         self.depth_var = tk.StringVar()
         self.Zspeed_var = tk.StringVar()
         self.pitch_var = tk.StringVar()
+        self.angular_y_var = tk.StringVar()
         self.roll_var = tk.StringVar()
+        self.angular_x_var = tk.StringVar() 
         self.yaw_var = tk.StringVar()
         self.force_pitch_var = tk.StringVar()
         self.force_roll_var = tk.StringVar()
@@ -39,7 +41,9 @@ class DebugMQTTViewerPage(tk.Frame):
             ("Depth", self.depth_var),
             ("Zspeed", self.Zspeed_var),
             ("Pitch", self.pitch_var),
+            ("Angular Y (pitch)", self.angular_y_var),
             ("Roll", self.roll_var),
+            ("Angular X (roll)", self.angular_x_var),
             ("Yaw", self.yaw_var),
             ("Force Pitch", self.force_pitch_var),
             ("Force Roll", self.force_roll_var),
@@ -107,7 +111,9 @@ class DebugMQTTViewerPage(tk.Frame):
         self.depth_var.set(message.get("depth", "N/A"))
         self.Zspeed_var.set(message.get("Zspeed", "N/A"))
         self.pitch_var.set(message.get("pitch", "N/A"))
+        self.angular_y_var.set(message.get("angular_y", "N/A")) 
         self.roll_var.set(message.get("roll", "N/A"))
+        self.angular_x_var.set(message.get("angular_x", "N/A"))
         self.yaw_var.set(message.get("yaw", "N/A"))
         self.force_pitch_var.set(message.get("force_pitch", "N/A"))
         self.force_roll_var.set(message.get("force_roll", "N/A"))
