@@ -134,21 +134,16 @@ class UpdateConfigurationPage(tk.Frame):
 
 
     def _find_and_update_key(self, config_level, target_key, new_value):
-        """Recursively searches for target_key in config_level and updates if its value is a list."""
+        """Recursively searches for target_key in config_level and updates its value."""
         if not isinstance(config_level, dict):
             return False
 
         for key, value in config_level.items():
             if key == target_key:
-                if isinstance(value, list):
-                    # Found the key and its value is a list, update it
-                    config_level[key] = new_value
-                    print(f"Updated key '{target_key}' from .mat file.")
-                    return True
-                else:
-                    # Found the key, but its value is not a list, do not update
-                    print(f"Key '{target_key}' found but value is not a list. Skipping update.")
-                    return False # Indicate key was found but not updated
+                # Found the key, update its value directly
+                config_level[key] = new_value
+                print(f"Updated key '{target_key}' with new value.")
+                return True
             elif isinstance(value, dict):
                 # Recurse into nested dictionary
                 if self._find_and_update_key(value, target_key, new_value):
@@ -157,7 +152,7 @@ class UpdateConfigurationPage(tk.Frame):
 
 
     def load_mat_file(self):
-        """Loads data from a .mat file and updates corresponding list-type keys in current_config."""
+        """Loads data from a .mat file, flattens matrices, and updates corresponding keys in current_config."""
 
         if not self.current_config:
             messagebox.showwarning("No Configuration", "Load a configuration first before loading .mat data.")
@@ -181,25 +176,37 @@ class UpdateConfigurationPage(tk.Frame):
                 if mat_key.startswith('__'):
                     continue
 
-                # Attempt to find and update the key in the current config
-                if not self._find_and_update_key(self.current_config, mat_key, mat_value):
-                     # Only add to not_found if it wasn't found at all (vs found but not list)
-                     # Note: _find_and_update_key currently doesn't differentiate this perfectly,
-                     # but we'll assume if it returns False, it wasn't updated.
-                     not_found_keys.append(mat_key)
+                # Process the value: flatten numpy arrays, convert numpy scalars
+                value_to_update = None
+                if isinstance(mat_value, np.ndarray):
+                    # Flatten multi-dimensional arrays into a 1D list
+                    value_to_update = mat_value.flatten().tolist()
+                    #print(f"Flattened matrix for key '{mat_key}'.")
+                elif isinstance(mat_value, np.generic):
+                     # Convert numpy scalar types (like np.float64) to Python native types
+                     value_to_update = mat_value.item()
+                     #print(f"Converted numpy scalar for key '{mat_key}'.")
                 else:
+                    # Use other types as is (e.g., strings, standard Python numbers if loadmat returns them)
+                    value_to_update = mat_value
+
+                # Attempt to find and update the key in the current config
+                if self._find_and_update_key(self.current_config, mat_key, value_to_update):
                      updated_keys.append(mat_key)
+                else:
+                     not_found_keys.append(mat_key)
 
 
+            # --- Feedback Messages ---
             if updated_keys:
-                 msg = f"Successfully updated data for keys: {', '.join(updated_keys)}.\n"
+                 msg = f"Successfully processed and updated data for keys: {', '.join(updated_keys)}.\n"
                  if not_found_keys:
-                     msg += f"Keys not found or not updatable (must be list type in config): {', '.join(not_found_keys)}."
+                     msg += f"Keys not found in the current configuration: {', '.join(not_found_keys)}."
                  messagebox.showinfo("MAT File Loaded", msg)
             elif not_found_keys:
-                 messagebox.showwarning("MAT File Loaded", f"No matching list-type keys found in the current configuration for variables in the .mat file.\nChecked for: {', '.join(not_found_keys)}")
+                 messagebox.showwarning("MAT File Processed", f"No matching keys found in the current configuration for variables in the .mat file.\nChecked for: {', '.join(not_found_keys)}")
             else:
-                 messagebox.showinfo("MAT File Loaded", "No variables found in the .mat file (excluding internal ones).")
+                 messagebox.showinfo("MAT File Loaded", "No variables found in the .mat file (excluding internal ones) to process.")
 
 
         except Exception as e:
@@ -268,7 +275,7 @@ class UpdateConfigurationPage(tk.Frame):
         # Prepare a version for sending (convert numpy arrays to lists)
         config_to_send = self._convert_numpy_to_list(copy.deepcopy(self.current_config))
 
-        print(f"Sending updated configuration (numpy arrays converted to lists): {config_to_send}")
+        print(f"Sending updated configuration: {config_to_send}")
         mqtt_send_message(MQTT_TOPIC_CONFIG, config_to_send)
 
     def request_configuration(self):
