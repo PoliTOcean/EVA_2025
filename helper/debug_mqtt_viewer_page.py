@@ -7,6 +7,21 @@ class DebugMQTTViewerPage(tk.Frame):
         super().__init__(parent)
         self.controller = controller
 
+        # Create a main canvas and a scrollbar
+        main_canvas = tk.Canvas(self)
+        scrollbar = tk.Scrollbar(self, orient="vertical", command=main_canvas.yview)
+        scrollable_frame = tk.Frame(main_canvas)
+
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: main_canvas.configure(
+                scrollregion=main_canvas.bbox("all")
+            )
+        )
+
+        main_canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        main_canvas.configure(yscrollcommand=scrollbar.set)
+
         # Variables to store data
         self.bar_state_var = tk.StringVar()
         self.imu_state_var = tk.StringVar()
@@ -29,10 +44,21 @@ class DebugMQTTViewerPage(tk.Frame):
         self.reference_pitch_var = tk.StringVar()
         self.reference_roll_var = tk.StringVar()
         self.reference_z_var = tk.StringVar()
+        self.cpu_temp_var = tk.StringVar()
+        self.cpu_usage_var = tk.StringVar()
+        self.ram_total_mb_var = tk.StringVar()
+        self.ram_used_mb_var = tk.StringVar()
+        self.internal_temperature_var = tk.StringVar()
+        self.external_temperature_var = tk.StringVar()
+        self.error_integral_z_var = tk.StringVar()
+        self.error_integral_pitch_var = tk.StringVar()
+        self.error_integral_roll_var = tk.StringVar()
+        self.work_mode_var = tk.StringVar()
+
 
         # Left column for other info
-        left_frame = tk.Frame(self)
-        left_frame.grid(row=0, column=0, sticky="ns")
+        left_frame = tk.Frame(scrollable_frame) # Parent changed to scrollable_frame
+        left_frame.grid(row=0, column=0, sticky="ns", padx=5, pady=5)
 
         labels = [
             ("Bar State", self.bar_state_var),
@@ -52,7 +78,17 @@ class DebugMQTTViewerPage(tk.Frame):
             ("Motor Thrust Max Z", self.motor_thrust_max_z_var),
             ("Reference Pitch", self.reference_pitch_var),
             ("Reference Roll", self.reference_roll_var),
-            ("Reference Z", self.reference_z_var)
+            ("Reference Z", self.reference_z_var),
+            ("CPU Temp", self.cpu_temp_var),
+            ("CPU Usage", self.cpu_usage_var),
+            ("RAM Total (MB)", self.ram_total_mb_var),
+            ("RAM Used (MB)", self.ram_used_mb_var),
+            ("Internal Temp", self.internal_temperature_var),
+            ("External Temp", self.external_temperature_var),
+            ("Error Integral Z", self.error_integral_z_var),
+            ("Error Integral Pitch", self.error_integral_pitch_var),
+            ("Error Integral Roll", self.error_integral_roll_var),
+            ("Work Mode", self.work_mode_var)
         ] + [(key, var) for key, var in self.controller_state_vars.items()]
 
         for i, (label, var) in enumerate(labels):
@@ -61,8 +97,8 @@ class DebugMQTTViewerPage(tk.Frame):
                 anchor="e", font='TkFixedFont').grid(row=i, column=1, padx=10, pady=5)
 
         # Right column for motor thrust bars
-        right_frame = tk.Frame(self)
-        right_frame.grid(row=0, column=1, sticky="ns")
+        right_frame = tk.Frame(scrollable_frame) # Parent changed to scrollable_frame
+        right_frame.grid(row=0, column=1, sticky="ns", padx=5, pady=5)
 
         self.canvas = tk.Canvas(right_frame, width=800, height=400)
         self.canvas.pack()
@@ -79,6 +115,10 @@ class DebugMQTTViewerPage(tk.Frame):
             self.pwm_labels[key] = self.canvas.create_text(x, 350, text="N/A", font=("Arial", 10))
             self.canvas.create_text(x, 370, text=key, font=("Arial", 10))
             self.thrust_text_labels[key] = self.canvas.create_text(x, 390, text="N/A", font=("Arial", 10))
+
+        # Pack the canvas and scrollbar
+        main_canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
 
         register_callback(self.update_data)
 
@@ -123,6 +163,19 @@ class DebugMQTTViewerPage(tk.Frame):
         self.reference_pitch_var.set(message.get("reference_pitch", "N/A"))
         self.reference_roll_var.set(message.get("reference_roll", "N/A"))
         self.reference_z_var.set(message.get("reference_z", "N/A"))
+        self.cpu_temp_var.set(message.get("cpu_temp", "N/A"))
+        self.cpu_usage_var.set(message.get("cpu_usage", "N/A"))
+        self.ram_total_mb_var.set(message.get("ram_total_mb", "N/A"))
+        self.ram_used_mb_var.set(message.get("ram_used_mb", "N/A"))
+        self.internal_temperature_var.set(message.get("internal_temperature", "N/A"))
+        self.external_temperature_var.set(message.get("external_temperature", "N/A"))
+        
+        error_integral = message.get("error_integral", {})
+        self.error_integral_z_var.set(error_integral.get("Z", "N/A"))
+        self.error_integral_pitch_var.set(error_integral.get("PITCH", "N/A"))
+        self.error_integral_roll_var.set(error_integral.get("ROLL", "N/A"))
+        
+        self.work_mode_var.set(message.get("work_mode", "N/A"))
 
     def update_motor_thrust_bar(self, motor, thrust):
         # Convert thrust value to a height for the bar (range from -3 to 3)
