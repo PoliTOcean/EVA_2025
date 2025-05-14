@@ -1,5 +1,6 @@
 # debug_mqtt_viewer_page.py
 import tkinter as tk
+from tkinter import ttk
 from mqtt_handler import register_callback, unregister_callback, MQTT_TOPIC_STATUS
 
 class DebugMQTTViewerPage(tk.Frame):
@@ -56,70 +57,135 @@ class DebugMQTTViewerPage(tk.Frame):
         self.work_mode_var = tk.StringVar()
 
 
-        # Left column for other info
-        left_frame = tk.Frame(scrollable_frame) # Parent changed to scrollable_frame
-        left_frame.grid(row=0, column=0, sticky="ns", padx=5, pady=5)
-
-        labels = [
-            ("Bar State", self.bar_state_var),
-            ("IMU State", self.imu_state_var),
+        # Create a structured layout with frames for different groups of information
+        # Top row: ROV Status and System Status
+        top_row = tk.Frame(scrollable_frame)
+        top_row.grid(row=0, column=0, columnspan=3, sticky="ew", padx=10, pady=5)
+        
+        # ROV Status Box without temperatures
+        status_frame = ttk.LabelFrame(top_row, text="ROV Status")
+        status_frame.grid(row=0, column=0, padx=10, pady=5, sticky="nw")
+        
+        status_vars = [
             ("ROV Armed", self.rov_armed_var),
-            ("Depth", self.depth_var),
-            ("Zspeed", self.Zspeed_var),
-            ("Pitch", self.pitch_var),
-            ("Angular Y (pitch)", self.angular_y_var),
-            ("Roll", self.roll_var),
-            ("Angular X (roll)", self.angular_x_var),
-            ("Yaw", self.yaw_var),
-            ("Force Pitch", self.force_pitch_var),
-            ("Force Roll", self.force_roll_var),
-            ("Force Z", self.force_z_var),
-            ("Motor Thrust Max XY", self.motor_thrust_max_xy_var),
-            ("Motor Thrust Max Z", self.motor_thrust_max_z_var),
-            ("Reference Pitch", self.reference_pitch_var),
-            ("Reference Roll", self.reference_roll_var),
-            ("Reference Z", self.reference_z_var),
+            ("Work Mode", self.work_mode_var),
+            ("Bar State", self.bar_state_var),
+            ("IMU State", self.imu_state_var)
+        ]
+        
+        for i, (label, var) in enumerate(status_vars):
+            tk.Label(status_frame, text=label, width=12, anchor="w").grid(row=i, column=0, padx=5, pady=2, sticky="w")
+            tk.Label(status_frame, textvariable=var, width=8, anchor="e", font='TkFixedFont').grid(row=i, column=1, padx=5, pady=2)
+        
+        # System Status Box next to ROV Status
+        system_frame = ttk.LabelFrame(top_row, text="System Status")
+        system_frame.grid(row=0, column=1, padx=10, pady=5, sticky="nw")
+        
+        system_vars = [
             ("CPU Temp", self.cpu_temp_var),
             ("CPU Usage", self.cpu_usage_var),
-            ("RAM Total (MB)", self.ram_total_mb_var),
-            ("RAM Used (MB)", self.ram_used_mb_var),
-            ("Internal Temp", self.internal_temperature_var),
-            ("External Temp", self.external_temperature_var),
-            ("Error Integral Z", self.error_integral_z_var),
-            ("Error Integral Pitch", self.error_integral_pitch_var),
-            ("Error Integral Roll", self.error_integral_roll_var),
-            ("Work Mode", self.work_mode_var)
-        ] + [(key, var) for key, var in self.controller_state_vars.items()]
-
-        for i, (label, var) in enumerate(labels):
-            tk.Label(left_frame, text=label, width=15, anchor="w").grid(row=i, column=0, padx=10, pady=5, sticky="w")
-            tk.Label(left_frame, textvariable=var, width=6, 
-                anchor="e", font='TkFixedFont').grid(row=i, column=1, padx=10, pady=5)
-
-        # Right column for motor thrust bars
-        right_frame = tk.Frame(scrollable_frame) # Parent changed to scrollable_frame
-        right_frame.grid(row=0, column=1, sticky="ns", padx=5, pady=5)
-
-        self.canvas = tk.Canvas(right_frame, width=800, height=400)
-        self.canvas.pack()
-
+            ("RAM Total", self.ram_total_mb_var),
+            ("RAM Used", self.ram_used_mb_var)
+        ]
+        
+        for i, (label, var) in enumerate(system_vars):
+            tk.Label(system_frame, text=label, width=12, anchor="w").grid(row=i, column=0, padx=5, pady=2, sticky="w")
+            tk.Label(system_frame, textvariable=var, width=8, anchor="e", font='TkFixedFont').grid(row=i, column=1, padx=5, pady=2)
+            
+        # New Sensors Box
+        sensors_frame = ttk.LabelFrame(top_row, text="Sensors")
+        sensors_frame.grid(row=0, column=2, padx=10, pady=5, sticky="nw")
+        
+        sensors_vars = [
+            ("Int Temp", self.internal_temperature_var),
+            ("Ext Temp", self.external_temperature_var),
+            ("Yaw", self.yaw_var)
+        ]
+        
+        for i, (label, var) in enumerate(sensors_vars):
+            tk.Label(sensors_frame, text=label, width=12, anchor="w").grid(row=i, column=0, padx=5, pady=2, sticky="w")
+            tk.Label(sensors_frame, textvariable=var, width=8, anchor="e", font='TkFixedFont').grid(row=i, column=1, padx=5, pady=2)
+        
+        # Middle row: Control Values (merged with Position & Motion)
+        control_frame = ttk.LabelFrame(scrollable_frame, text="Control Values")
+        control_frame.grid(row=1, column=0, columnspan=3, padx=10, pady=5, sticky="ew")
+        
+        # Group control values into 3 columns: Depth, Roll, Pitch
+        # Reordered to put reference values in second position
+        depth_vars = [
+            ("Depth", self.depth_var),
+            ("Ref Z", self.reference_z_var),
+            ("Z Speed", self.Zspeed_var),
+            ("Force Z", self.force_z_var),
+            ("Err Int Z", self.error_integral_z_var),
+            ("Ctrl DEPTH", self.controller_state_vars["DEPTH"])
+        ]
+        
+        roll_vars = [
+            ("Roll", self.roll_var),
+            ("Ref Roll", self.reference_roll_var),
+            ("Angular X", self.angular_x_var),
+            ("Force Roll", self.force_roll_var),
+            ("Err Int Roll", self.error_integral_roll_var),
+            ("Ctrl ROLL", self.controller_state_vars["ROLL"])
+        ]
+        
+        pitch_vars = [
+            ("Pitch", self.pitch_var),
+            ("Ref Pitch", self.reference_pitch_var),
+            ("Angular Y", self.angular_y_var),
+            ("Force Pitch", self.force_pitch_var),
+            ("Err Int Pitch", self.error_integral_pitch_var),
+            ("Ctrl PITCH", self.controller_state_vars["PITCH"])
+        ]
+        
+        # Create the 3-column layout
+        for i, (label, var) in enumerate(depth_vars):
+            tk.Label(control_frame, text=label, width=12, anchor="w").grid(row=i, column=0, padx=5, pady=2, sticky="w")
+            tk.Label(control_frame, textvariable=var, width=8, anchor="e", font='TkFixedFont').grid(row=i, column=1, padx=5, pady=2)
+            
+        for i, (label, var) in enumerate(roll_vars):
+            tk.Label(control_frame, text=label, width=12, anchor="w").grid(row=i, column=2, padx=5, pady=2, sticky="w")
+            tk.Label(control_frame, textvariable=var, width=8, anchor="e", font='TkFixedFont').grid(row=i, column=3, padx=5, pady=2)
+            
+        for i, (label, var) in enumerate(pitch_vars):
+            tk.Label(control_frame, text=label, width=12, anchor="w").grid(row=i, column=4, padx=5, pady=2, sticky="w")
+            tk.Label(control_frame, textvariable=var, width=8, anchor="e", font='TkFixedFont').grid(row=i, column=5, padx=5, pady=2)
+        
+        # Bottom row: Motor Thrust Visualization (more compact)
+        motor_frame = ttk.LabelFrame(scrollable_frame, text="Motor Thrust Visualization")
+        motor_frame.grid(row=2, column=0, columnspan=3, padx=10, pady=5, sticky="ew")
+        
+        self.canvas = tk.Canvas(motor_frame, width=700, height=300)  # Reduced height
+        self.canvas.pack(padx=5, pady=5)
+        
         # Create labels for motor thrust and PWM values
         self.motor_labels = {}
         self.pwm_labels = {}
         self.thrust_text_labels = {}
-
+        
         motor_keys = ["FDX", "FSX", "RDX", "RSX", "UPFDX", "UPFSX", "UPRDX", "UPRSX"]
         for i, key in enumerate(motor_keys):
-            x = i * 70 + 45  # Adjusted to make the bars thicker and closer
-            self.motor_labels[key] = self.canvas.create_rectangle(x-15, 200, x+15, 200, fill="blue")
-            self.pwm_labels[key] = self.canvas.create_text(x, 350, text="N/A", font=("Arial", 10))
-            self.canvas.create_text(x, 370, text=key, font=("Arial", 10))
-            self.thrust_text_labels[key] = self.canvas.create_text(x, 390, text="N/A", font=("Arial", 10))
-
+            x = i * 65 + 75  # Increased padding to the right (from 45 to 75)
+            self.motor_labels[key] = self.canvas.create_rectangle(x-15, 150, x+15, 150, fill="blue")  # Centered at 150
+            self.pwm_labels[key] = self.canvas.create_text(x, 250, text="N/A", font=("Arial", 10))  # Adjusted y position
+            self.canvas.create_text(x, 270, text=key, font=("Arial", 10))  # Adjusted y position
+            self.thrust_text_labels[key] = self.canvas.create_text(x, 290, text="N/A", font=("Arial", 10))  # Adjusted y position
+        
+        # Add a horizontal reference line at zero thrust
+        self.canvas.create_line(0, 150, 700, 150, fill="gray", dash=(4, 2))  # Zero line at 150
+        self.canvas.create_text(40, 150, text="0", anchor="e", fill="gray")  # Increased x from 20 to 40
+        
+        # Add scale markers for +/- 2.5
+        self.canvas.create_line(45, 25, 55, 25, fill="gray")  # Line at +2.5 (x increased from 25 to 45)
+        self.canvas.create_text(40, 25, text="+2.5", anchor="e", fill="gray")  # Increased x from 20 to 40
+        self.canvas.create_line(45, 275, 55, 275, fill="gray")  # Line at -2.5 (x increased from 25 to 45)
+        self.canvas.create_text(40, 275, text="-2.5", anchor="e", fill="gray")  # Increased x from 20 to 40
+        
         # Pack the canvas and scrollbar
         main_canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
-
+        
         register_callback(self.update_data)
 
     def update_data(self, message, topic):
@@ -178,10 +244,11 @@ class DebugMQTTViewerPage(tk.Frame):
         self.work_mode_var.set(message.get("work_mode", "N/A"))
 
     def update_motor_thrust_bar(self, motor, thrust):
-        # Convert thrust value to a height for the bar (range from -3 to 3)
-        height = 200 - (thrust * 50)  # 50 pixels per unit thrust
+        # Convert thrust value to a height for the bar (max value +/- 2.5)
+        # New scale: 50 pixels per 2.5 units, centered at 150
+        height = 150 - (thrust * 50)  # 50 pixels per 2.5 units of thrust
         x = self.canvas.coords(self.motor_labels[motor])[0] + 15
-        self.canvas.coords(self.motor_labels[motor], x-15, height, x+15, 200)
+        self.canvas.coords(self.motor_labels[motor], x-15, height, x+15, 150)
         self.canvas.itemconfig(self.thrust_text_labels[motor], text=f"{thrust:.2f}")
 
     def __del__(self):

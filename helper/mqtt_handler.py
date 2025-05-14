@@ -7,6 +7,8 @@ from datetime import datetime
 # Global MQTT client
 mqtt_client = None
 mqtt_callbacks = []
+connection_callbacks = []  # New: callbacks for connection status changes
+mqtt_connected = False  # New: track connection status
 
 # MQTT settings with default values
 MQTT_BROKER = ["10.0.0.254", "127.0.0.1"]
@@ -28,16 +30,24 @@ def initialize_mqtt(broker, topic_config, topic_commands, topic_axes, topic_stat
 
     if mqtt_client is not None:
         mqtt_client.disconnect()
+        notify_connection_status(False)
 
     mqtt_client = mqtt.Client()
     mqtt_client.on_connect = on_connect
     mqtt_client.on_message = on_message
+    mqtt_client.on_disconnect = on_disconnect  # New: handle disconnection events
+    
     try:
         result = mqtt_client.connect(broker[0], 1883, 60)
     except:
         print(f"Failed to connect to {broker[0]}, trying {broker[1]}")
-        result = mqtt_client.connect(broker[1], 1883, 60)
-        result += 10
+        try:
+            result = mqtt_client.connect(broker[1], 1883, 60)
+            result += 10
+        except:
+            print(f"Failed to connect to both MQTT brokers")
+            notify_connection_status(False)
+            return -1
 
     mqtt_thread = threading.Thread(target=mqtt_client.loop_forever)
     mqtt_thread.daemon = True
@@ -50,10 +60,36 @@ def initialize_mqtt(broker, topic_config, topic_commands, topic_axes, topic_stat
     return result
 
 def on_connect(client, userdata, flags, rc):
+    global mqtt_connected
     if rc == 0:
         print("Connected successfully to MQTT broker!")
+        mqtt_connected = True
+        notify_connection_status(True)
     else:
         print(f"Failed to connect, return code {rc}")
+        mqtt_connected = False
+        notify_connection_status(False)
+
+def on_disconnect(client, userdata, rc):
+    global mqtt_connected
+    print(f"Disconnected from MQTT broker with code {rc}")
+    mqtt_connected = False
+    notify_connection_status(False)
+
+def notify_connection_status(status):
+    """Notify all registered callbacks about connection status changes"""
+    for callback in connection_callbacks:
+        try:
+            callback(status)
+        except Exception as e:
+            print(f"Error in connection status callback: {e}")
+
+def register_connection_callback(callback):
+    """Register a callback function that accepts a boolean connected parameter"""
+    connection_callbacks.append(callback)
+    # Immediately notify about current status
+    if mqtt_client is not None:
+        callback(mqtt_connected)
 
 def on_message(client, userdata, msg):
     try:
