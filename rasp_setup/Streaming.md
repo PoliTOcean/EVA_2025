@@ -25,10 +25,10 @@ sudo apt install -y janus
 Create a GStreamer pipeline to capture video from the camera and stream it to Janus. Change the device and the port number.
 
 ```bash
-gst-launch-1.0 -v v4l2src device=/dev/video0 ! \
-image/jpeg,width=1600,height=1200,framerate=30/1 ! \
+gst-launch-1.0 -v v4l2src device=/dev/video10 ! \
+image/jpeg,width=1024,height=768,framerate=25/1 ! \
 jpegdec !  videoconvert !   x264enc \
-tune=zerolatency bitrate=5000 speed-preset=superfast ! \
+tune=zerolatency bitrate=2000 speed-preset=superfast ! \
 h264parse !  rtph264pay config-interval=1 pt=96 ! \
 udpsink host=127.0.0.1 port=5001
 
