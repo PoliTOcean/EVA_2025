@@ -32,9 +32,18 @@ class JanusWebRTCHandler:
         if self.status_callback:
             self.status_callback(status)
     
-    def connect(self, server_ip, on_success=None, on_error=None):
-        """Connect to Janus WebRTC Gateway"""
-        self.server_url = f"wss://{server_ip}:8989/janus"
+    def connect(self, server_ip, port=8188, use_ssl=True, on_success=None, on_error=None):
+        """Connect to Janus WebRTC Gateway
+        
+        Args:
+            server_ip: IP address of Janus server
+            port: Port number (default: 8188)
+            use_ssl: Whether to use secure WebSocket (default: True)
+            on_success: Callback for successful connection
+            on_error: Callback for connection errors
+        """
+        protocol = "wss" if use_ssl else "ws"
+        self.server_url = f"{protocol}://{server_ip}:{port}/janus"
         
         # Start connection in a separate thread to avoid blocking UI
         def connect_thread():
@@ -43,26 +52,44 @@ class JanusWebRTCHandler:
             
             try:
                 self.update_status("Connecting...")
-                self.loop.run_until_complete(self._connect_async(on_success, on_error))
+                self.loop.run_until_complete(self._connect_async(use_ssl, on_success, on_error))
             except Exception as e:
-                self.update_status(f"Error: {str(e)}")
+                error_msg = str(e)
+                if "WRONG_VERSION_NUMBER" in error_msg:
+                    # This typically happens when trying to use wss:// for a non-SSL server
+                    error_msg = "SSL Error: The server might not support SSL. Try connecting without SSL."
+                    
+                    # Auto-retry with non-SSL if we were using SSL
+                    if use_ssl:
+                        self.update_status("Retrying without SSL...")
+                        try:
+                            protocol = "ws"
+                            self.server_url = f"{protocol}://{server_ip}:{port}/janus"
+                            self.loop.run_until_complete(self._connect_async(False, on_success, on_error))
+                            return
+                        except Exception as retry_e:
+                            error_msg = f"Failed again without SSL: {str(retry_e)}"
+                
+                self.update_status(f"Error: {error_msg}")
                 if on_error:
-                    self.loop.call_soon_threadsafe(lambda: on_error(str(e)))
+                    self.loop.call_soon_threadsafe(lambda: on_error(error_msg))
         
         self.ws_thread = threading.Thread(target=connect_thread)
         self.ws_thread.daemon = True
         self.ws_thread.start()
     
-    async def _connect_async(self, on_success, on_error):
+    async def _connect_async(self, use_ssl, on_success, on_error):
         """Async implementation of the connection logic"""
         # SSL context that accepts self-signed certificates
-        ssl_context = ssl.create_default_context()
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
+        ssl_context = None
+        if use_ssl:
+            ssl_context = ssl.create_default_context()
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
         
         try:
             self.websocket = await websockets.connect(
-                self.server_url, 
+                self.server_url,
                 ssl=ssl_context
             )
             self.connected = True
@@ -78,7 +105,9 @@ class JanusWebRTCHandler:
             
             # Call success callback in the main thread
             if on_success:
-                self.loop.call_soon_threadsafe(lambda: on_success(self.streams_info))
+                # Using a local variable to capture the streams_info
+                streams = self.streams_info
+                self.loop.call_soon_threadsafe(lambda: on_success(streams))
                 
             self.update_status("Connected")
             
@@ -86,7 +115,9 @@ class JanusWebRTCHandler:
             self.connected = False
             self.update_status(f"Connection failed: {str(e)}")
             if on_error:
-                self.loop.call_soon_threadsafe(lambda: on_error(str(e)))
+                # Fix the variable capture issue by using a default parameter
+                error_msg = str(e)
+                self.loop.call_soon_threadsafe(lambda error=error_msg: on_error(error))
             raise
     
     async def _message_loop(self):
