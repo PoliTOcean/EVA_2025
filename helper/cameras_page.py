@@ -1,84 +1,96 @@
 import tkinter as tk
-from tkinter import messagebox
-import requests
-import os
-from datetime import datetime
+from tkinter import ttk, messagebox
 import threading
-
-import mqtt_handler
+from datetime import datetime
+from rtp_handler import RTPStreamHandler  # Updated import
 
 class CamerasPage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
 
-        # Register the camera-related MQTT callback
-        mqtt_handler.register_callback(self.mqtt_camera_callback)
+        # Initialize RTP stream handler
+        self.rtp_handler = RTPStreamHandler()
+        self.stream_ip = "127.0.0.1"  # Default IP for RTP streams
 
-        self.camera_ports = {
-            "1": 8080,
-            "2": 8079,
-            "3": 8078,
-            "4": 8077
-        }
+        # Main frame for camera controls
+        main_frame = ttk.Frame(self, padding=10)
+        main_frame.pack(fill=tk.BOTH, expand=True)
 
-        tk.Label(self, text="Cameras Page", font=("Arial", 16)).pack(pady=10)
+        # IP label
+        ip_frame = ttk.Frame(main_frame)
+        ip_frame.pack(fill=tk.X, pady=5)
+        ttk.Label(ip_frame, text="RTP Stream IP:").pack(side=tk.LEFT, padx=5)
+        self.ip_var = tk.StringVar(value=self.stream_ip)
+        ttk.Label(ip_frame, textvariable=self.ip_var).pack(side=tk.LEFT, padx=5)
 
-        button_frame = tk.Frame(self)
-        button_frame.pack(pady=10)
+        # Cameras frame
+        self.cameras_frame = ttk.LabelFrame(main_frame, text="Available Cameras", padding=10)
+        self.cameras_frame.pack(fill=tk.BOTH, expand=True, pady=10)
 
-        for camera in self.camera_ports.keys():
-            tk.Button(button_frame, 
-                      text=f"Take Photo Camera {camera}",
-                      command=lambda c=camera: self.take_photo(c)
-                     ).pack(pady=5, fill='x')
+        # Add camera buttons
+        for port in self.rtp_handler.stream_ports:
+            camera_btn = ttk.Button(
+                self.cameras_frame,
+                text=f"Take Photo: Camera on Port {port}",
+                command=lambda p=port: self.take_photo(p)
+            )
+            camera_btn.pack(fill=tk.X, pady=5)
 
-        tk.Button(button_frame, 
-                  text="Take Photo CAMERA_1 and CAMERA_2",
-                  command=self.take_photo_camera_1_2
-                 ).pack(pady=5, fill='x')
+        # Group action buttons
+        group_frame = ttk.LabelFrame(main_frame, text="Group Actions", padding=10)
+        group_frame.pack(fill=tk.X, pady=10)
 
-    def mqtt_camera_callback(self, message, topic):
-        """
-        Handles incoming MQTT messages for camera commands.
-        """
-        if topic != mqtt_handler.MQTT_TOPIC_COMMANDS:
-            return
-        command = message.popitem()[0]
-        if command and command.startswith("PHOTO_CAMERA_"):
-            cameras = command.split("_")[2:]
-            threads = []
-            for camera in cameras:
-                t = threading.Thread(target=self.take_photo, args=(camera,))
-                threads.append(t)
-                t.start()
-            for t in threads:
-                t.join()
+        ttk.Button(
+            group_frame,
+            text="Take Photos from Cameras 0 and 1 Simultaneously",
+            command=self.take_photo_0_1
+        ).pack(fill=tk.X, pady=5)
 
-    def take_photo(self, camera):
-        port = self.camera_ports.get(camera, 8080)
-        url = f"http://10.0.0.254:{port}/snapshot"
+        ttk.Button(
+            group_frame,
+            text="Take Photos from All Cameras Simultaneously",
+            command=self.take_photo_all
+        ).pack(fill=tk.X, pady=5)
+
+    def take_photo(self, port):
+        """Take a photo from a specific RTP stream."""
         try:
-            response = requests.get(url)
-            if response.status_code == 200:
-                self.save_photo(camera, response.content)
-                #messagebox.showinfo("Success", f"Photo taken from {camera} and saved successfully.")
-            else:
-                messagebox.showerror("Error", f"Failed to take photo from {camera} (status code: {response.status_code})")
-        except requests.RequestException as e:
-            messagebox.showerror("Error", f"Error taking photo from {camera}: {e}")
+            file_path = self.rtp_handler.take_snapshot(port)
+            messagebox.showinfo("Success", f"Snapshot saved to {file_path}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to take snapshot: {str(e)}")
 
-    def take_photo_camera_1_2(self):
-        thread1 = threading.Thread(target=self.take_photo, args=("1",))
-        thread2 = threading.Thread(target=self.take_photo, args=("2",))
-        thread1.start()
-        thread2.start()
+    def take_photo_0_1(self):
+        self._take_photos_simultaneous([5000, 5001])
 
-    def save_photo(self, camera, photo_data):
-        folder_path = os.path.join("photos", camera)
-        os.makedirs(folder_path, exist_ok=True)
+    def take_photo_all(self):
+        self._take_photos_simultaneous(self.rtp_handler.stream_ports)
+
+    def _take_photos_simultaneous(self, ports):
+        """Take snapshots from multiple cameras at the exact same time."""
+        results = {}
+        errors = {}
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        file_path = os.path.join(folder_path, f"{timestamp}.jpg")
-        with open(file_path, "wb") as file:
-            file.write(photo_data)
-        print(f"Photo saved to {file_path}")
+
+        def capture(port):
+            try:
+                file_path = self.rtp_handler.take_snapshot(port, timestamp=timestamp)
+                results[port] = file_path
+            except Exception as e:
+                errors[port] = str(e)
+
+        threads = []
+        for port in ports:
+            t = threading.Thread(target=capture, args=(port,))
+            t.start()
+            threads.append(t)
+        for t in threads:
+            t.join()
+
+        if results:
+            msg = "Snapshots saved:\n" + "\n".join([f"Camera {p}: {f}" for p, f in results.items()])
+            messagebox.showinfo("Success", msg)
+        if errors:
+            msg = "Errors:\n" + "\n".join([f"Camera {p}: {e}" for p, e in errors.items()])
+            messagebox.showerror("Error", msg)
