@@ -3,3 +3,4 @@ requests
 numpy==2.2.5
 scipy==1.15.2
 matplotlib==3.10.3
+websockets==15.0.1

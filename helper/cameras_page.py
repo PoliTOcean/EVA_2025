@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import threading
 from datetime import datetime
-from rtp_handler import RTPStreamHandler  # Updated import
+from rtp_handler import RTPStreamHandler
 
 class CamerasPage(tk.Frame):
     def __init__(self, parent, controller):
@@ -11,7 +11,7 @@ class CamerasPage(tk.Frame):
 
         # Initialize RTP stream handler
         self.rtp_handler = RTPStreamHandler()
-        self.stream_ip = "10.0.0.23"  # Default IP for RTP streams
+        self.stream_ip = "10.0.0.192"  # Default IP for RTP streams
 
         # Main frame for camera controls
         main_frame = ttk.Frame(self, padding=10)
@@ -160,3 +160,4 @@ class CamerasPage(tk.Frame):
             )
             
             messagebox.showerror("Snapshot Errors", error_report)
+            

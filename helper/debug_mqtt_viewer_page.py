@@ -55,6 +55,9 @@ class DebugMQTTViewerPage(tk.Frame):
         self.error_integral_pitch_var = tk.StringVar()
         self.error_integral_roll_var = tk.StringVar()
         self.work_mode_var = tk.StringVar()
+        self.obs_z_var = tk.StringVar()
+        self.obs_roll_var = tk.StringVar()
+        self.obs_pitch_var = tk.StringVar()
 
 
         # Create a structured layout with frames for different groups of information
@@ -118,6 +121,7 @@ class DebugMQTTViewerPage(tk.Frame):
             ("Z Speed", self.Zspeed_var),
             ("Force Z", self.force_z_var),
             ("Err Int Z", self.error_integral_z_var),
+            ("Obs Z", self.obs_z_var),
             ("Ctrl DEPTH", self.controller_state_vars["DEPTH"])
         ]
         
@@ -127,6 +131,7 @@ class DebugMQTTViewerPage(tk.Frame):
             ("Angular X", self.angular_x_var),
             ("Force Roll", self.force_roll_var),
             ("Err Int Roll", self.error_integral_roll_var),
+            ("Obs Roll", self.obs_roll_var),
             ("Ctrl ROLL", self.controller_state_vars["ROLL"])
         ]
         
@@ -136,6 +141,7 @@ class DebugMQTTViewerPage(tk.Frame):
             ("Angular Y", self.angular_y_var),
             ("Force Pitch", self.force_pitch_var),
             ("Err Int Pitch", self.error_integral_pitch_var),
+            ("Obs Pitch", self.obs_pitch_var),
             ("Ctrl PITCH", self.controller_state_vars["PITCH"])
         ]
         
@@ -240,6 +246,11 @@ class DebugMQTTViewerPage(tk.Frame):
         self.error_integral_z_var.set(error_integral.get("Z", "N/A"))
         self.error_integral_pitch_var.set(error_integral.get("PITCH", "N/A"))
         self.error_integral_roll_var.set(error_integral.get("ROLL", "N/A"))
+        
+        obs_states = message.get("obs_states", {})
+        self.obs_z_var.set(obs_states.get("z", "N/A"))
+        self.obs_roll_var.set(obs_states.get("roll", "N/A"))
+        self.obs_pitch_var.set(obs_states.get("pitch", "N/A"))
         
         self.work_mode_var.set(message.get("work_mode", "N/A"))
 
