@@ -19,6 +19,8 @@ class MainApp(tk.Tk):
         self.title("Modular GUI with MQTT")
         self.geometry("800x900")
         self.mqtt_connected = False
+        self.reconnect_scheduled = False
+        self.reconnect_delay = 5000  # 5 seconds
 
         # Create a navigation bar
         nav_bar = tk.Frame(self, bg="lightgrey")
@@ -72,8 +74,24 @@ class MainApp(tk.Tk):
         self.mqtt_connected = connected
         if connected:
             self.status_frame.config(bg="green")
+            self.connect_button.config(text="ROV Connected")
+            self.reconnect_scheduled = False  # Connection successful, cancel any pending reconnect
         else:
             self.status_frame.config(bg="red")
+            self.connect_button.config(text="Connect to ROV")
+            if not self.reconnect_scheduled:
+                print(f"MQTT disconnected. Scheduling reconnection in {self.reconnect_delay / 1000} seconds.")
+                self.reconnect_scheduled = True
+                self.after(self.reconnect_delay, self.attempt_reconnection)
+
+    def attempt_reconnection(self):
+        """Attempt to reconnect to MQTT if not already connected."""
+        if not self.mqtt_connected:
+            print("Attempting to reconnect to MQTT...")
+            self.connect_to_mqtt() 
+        # Regardless of outcome, allow update_connection_status to reschedule if needed
+        self.reconnect_scheduled = False
+
 
     def connect_to_mqtt(self):
         """Connect to MQTT using default values"""

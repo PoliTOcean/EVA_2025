@@ -1,55 +1,42 @@
-import cv2
 import os
 import subprocess
-import numpy as np
-import platform
+import platform # Keep platform for _check_ffmpeg_availability
 from datetime import datetime
+# Removed cv2 and numpy imports as they are not used if GStreamer path is removed
+import time # Added for retry delay
 
 class RTPStreamHandler:
     def __init__(self):
         self.stream_ports = [5001, 5002, 5003, 5004, 5005]
-        self.streams = {port: None for port in self.stream_ports}
-        # Check GStreamer support
-        self.has_gstreamer = self._check_gstreamer_support()
-        if not self.has_gstreamer:
-            print("WARNING: OpenCV not built with GStreamer support. RTP capture may not work.")
+        self.streams = {port: None for port in self.stream_ports} # Will mark if ffmpeg is to be used
         
+        # Check ffmpeg availability
+        self.has_ffmpeg = self._check_ffmpeg_availability()
+        if not self.has_ffmpeg:
+            raise RuntimeError("ffmpeg is not installed or not found in PATH. Cannot capture RTP streams.")
+
         # Create directory for SDP files if it doesn't exist
         self.sdp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sdp_files")
         os.makedirs(self.sdp_dir, exist_ok=True)
         
         # Known working stream info
         self.stream_info = {
-            # Default values based on test
-            'width': 1920,
-            'height': 1080,
+            'width': 1080,
+            'height': 720,
             'framerate': 30
         }
 
-    def _check_gstreamer_support(self):
-        """Check if OpenCV is built with GStreamer support"""
-        # Check if OpenCV has GStreamer support
-        build_info = cv2.getBuildInformation()
-        has_gstreamer = "GStreamer" in build_info and "YES" in build_info.split("GStreamer:")[1].split("\n")[0]
-        
-        # Also check if gst-launch is available
-        gst_available = False
+    def _check_ffmpeg_availability(self):
+        """Check if ffmpeg is installed and accessible."""
         try:
-            if platform.system() == "Windows":
-                # Check for Windows gst-launch
-                result = subprocess.run(["where", "gst-launch-1.0"], capture_output=True, text=True)
-                gst_available = result.returncode == 0
-            else:
-                # Check for Unix-like gst-launch
-                result = subprocess.run(["which", "gst-launch-1.0"], capture_output=True, text=True)
-                gst_available = result.returncode == 0
-        except Exception:
-            gst_available = False
-            
-        print(f"OpenCV GStreamer support: {has_gstreamer}")
-        print(f"GStreamer command line tools: {gst_available}")
-        
-        return has_gstreamer
+            # Use 'where' on Windows and 'which' on Unix-like systems
+            command = "where" if platform.system() == "Windows" else "which"
+            subprocess.run([command, "ffmpeg"], check=True, capture_output=True)
+            print("ffmpeg found.")
+            return True
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            print("ffmpeg not found.")
+            return False
 
     def _create_sdp_file(self, port, ip_address="0.0.0.0"):
         """Create an SDP file for the specified port with known video parameters"""
@@ -71,42 +58,22 @@ a=framerate:{self.stream_info['framerate']}
         return sdp_path
 
     def start_stream(self, port):
-        """Start capturing from an RTP stream on the given port using ffmpeg as fallback."""
+        """Mark that ffmpeg will be used for this port."""
         if port not in self.stream_ports:
             raise ValueError(f"Invalid port: {port}. Valid ports are {self.stream_ports}.")
         
-        # Try GStreamer method first if available
-        if self.has_gstreamer:
-            gst_pipeline = (
-                f'udpsrc port={port} caps="application/x-rtp, media=video, encoding-name=H264, payload=96" '
-                '! rtph264depay ! avdec_h264 ! videoconvert ! appsink'
-            )
-            
-            print(f"Opening stream with GStreamer pipeline: {gst_pipeline}")
-            cap = cv2.VideoCapture(gst_pipeline, cv2.CAP_GSTREAMER)
-            
-            if cap.isOpened():
-                self.streams[port] = cap
-                return True
+        if not self.has_ffmpeg:
+             raise RuntimeError("ffmpeg is not installed. Cannot capture RTP streams.")
         
-        # Fallback to ffmpeg (check if installed)
-        try:
-            subprocess.run(["which", "ffmpeg"], check=True, capture_output=True)
-            print(f"GStreamer not available. Using ffmpeg fallback for RTP stream on port {port}")
-            # We'll use ffmpeg when taking the snapshot, not keeping a continuous stream open
-            self.streams[port] = f"ffmpeg_rtp_{port}"  # Just a marker that we're using ffmpeg
-            return True
-        except subprocess.CalledProcessError:
-            raise RuntimeError(
-                "Neither GStreamer nor ffmpeg are available. Cannot capture RTP streams.\n"
-                "Please install either GStreamer or ffmpeg to continue."
-            )
+        # Mark that ffmpeg will be used for this port. No actual stream is started here.
+        self.streams[port] = f"ffmpeg_rtp_{port}" 
+        print(f"ffmpeg will be used for snapshots on port {port}")
+        return True
 
     def stop_stream(self, port):
-        """Stop capturing from an RTP stream on the given port."""
-        if port in self.streams and self.streams[port]:
-            self.streams[port].release()
-            self.streams[port] = None
+        """Placeholder as ffmpeg calls are per-snapshot."""
+        if port in self.streams:
+            self.streams[port] = None # Reset the marker
 
     def preview_stream(self, port):
         """Open an ffplay window to preview the stream"""
@@ -134,154 +101,134 @@ a=framerate:{self.stream_info['framerate']}
         except Exception as e:
             raise RuntimeError(f"Failed to start preview: {str(e)}")
 
-    def take_snapshot(self, port, timestamp=None):
-        """Take a snapshot from the RTP stream on the given port."""
+    def take_snapshot(self, port, timestamp=None, silent=False): # Added silent parameter
+        """Take a snapshot from the RTP stream on the given port using ffmpeg directly to JPG."""
         if port not in self.stream_ports:
             raise ValueError(f"Invalid port: {port}. Valid ports are {self.stream_ports}.")
         
+        if not self.has_ffmpeg:
+            raise RuntimeError("ffmpeg is not installed. Cannot capture RTP streams.")
+
         # Create folder for saving snapshots
         folder_path = os.path.join("photos", f"camera_{port}")
         os.makedirs(folder_path, exist_ok=True)
         
+        current_time = datetime.now()
         if not timestamp:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        file_path = os.path.join(folder_path, f"{timestamp}.jpg")
-        
-        # Start the stream if not already started
-        if not self.streams.get(port):
-            self.start_stream(port)
-        
-        # If using GStreamer backend (regular OpenCV)
-        if isinstance(self.streams[port], cv2.VideoCapture):
-            # Try to grab a frame first (this is more immediate than read())
-            grab_success = self.streams[port].grab()
-            if not grab_success:
-                raise RuntimeError(f"Failed to grab frame from port {port}.")
-            
-            ret, frame = self.streams[port].retrieve()
-            if not ret or frame is None:
-                raise RuntimeError(f"Retrieved frame is invalid from port {port}.")
-                
-            if frame.size == 0:
-                raise RuntimeError("Captured frame is empty (zero size).")
-                
-            save_success = cv2.imwrite(file_path, frame)
-            if not save_success:
-                raise RuntimeError(f"Failed to save image to {file_path}")
-        
-        # If using ffmpeg fallback
-        elif str(self.streams[port]).startswith("ffmpeg_rtp_"):
-            try:
-                # Create SDP file for this port
-                sdp_path = self._create_sdp_file(port)
-                
-                # First, try to verify stream is active (similar to preview)
-                print(f"Testing if RTP stream is active on port {port}...")
-                probe_cmd = [
-                    "ffprobe",
-                    "-v", "error",
-                    "-show_entries", "stream=width,height,codec_name",
-                    "-protocol_whitelist", "file,rtp,udp",
-                    "-i", sdp_path,
-                    "-max_probe_time", "3",  # 3 seconds max
-                    "-probesize", "5000000"  # 5MB probe size
-                ]
-                
-                try:
-                    # Just check if stream is decodable
-                    probe_result = subprocess.run(
-                        probe_cmd,
-                        capture_output=True,
-                        text=True,
-                        timeout=5
-                    )
-                    print(f"ffprobe result: {probe_result.returncode}")
-                    print(f"ffprobe output: {probe_result.stdout}")
-                    print(f"ffprobe stderr: {probe_result.stderr}")
-                except subprocess.TimeoutExpired:
-                    # Timeout is actually OK - means stream is flowing
-                    print("ffprobe timed out - stream is likely active")
-                    pass
+            timestamp_str = current_time.strftime("%Y%m%d_%H%M%S_%f") # Add microseconds for uniqueness
+        else:
+            timestamp_str = f"{timestamp}_p{port}_{current_time.strftime('%f')}"
 
-                # Create a temporary ts file first (TS container has better error recovery)
-                temp_ts_file = os.path.join(folder_path, f"temp_{timestamp}.ts")
-                
-                # Use ffmpeg with SDP file to capture a short segment of video
-                # This method is more reliable than trying to grab just one frame
-                capture_cmd = [
-                    "ffmpeg", 
-                    "-protocol_whitelist", "file,rtp,udp",
-                    "-i", sdp_path,
-                    "-t", "2",  # Capture 2 seconds of video
-                    "-vsync", "2",  # Passthrough vsync mode
-                    "-c:v", "copy",  # Don't re-encode, just copy
-                    "-y",  # Overwrite output without asking
-                    temp_ts_file
-                ]
-                
-                print(f"Running ffmpeg capture command: {' '.join(capture_cmd)}")
-                
-                # Run ffmpeg with a timeout - this captures a segment of the stream
-                result = subprocess.run(
-                    capture_cmd, 
-                    capture_output=True, 
-                    text=True, 
-                    timeout=10  # 10 second timeout
-                )
-                
-                if result.returncode != 0:
-                    detailed_error = f"ffmpeg capture failed with error code {result.returncode}:\n" 
-                    detailed_error += f"STDOUT: {result.stdout}\n"
-                    detailed_error += f"STDERR: {result.stderr}\n\n"
-                    detailed_error += "Possible solutions:\n"
-                    detailed_error += "1. Ensure the camera is actually streaming H.264 to this port\n"
-                    detailed_error += f"2. Try previewing the stream with: ffplay -protocol_whitelist file,rtp,udp -i {sdp_path}\n"
-                    detailed_error += "3. Check for network issues or firewall restrictions"
-                    
-                    raise RuntimeError(detailed_error)
-                
-                # Now extract the first good frame from the captured segment
-                extract_cmd = [
-                    "ffmpeg",
-                    "-i", temp_ts_file,
-                    "-vframes", "1",  # Extract one frame
-                    "-q:v", "1",  # Highest quality
-                    "-y",
-                    file_path
-                ]
-                
-                print(f"Extracting frame with command: {' '.join(extract_cmd)}")
-                
-                extract_result = subprocess.run(
-                    extract_cmd,
-                    capture_output=True,
-                    text=True,
-                    timeout=5
-                )
-                
-                # Clean up temporary file
-                try:
-                    os.remove(temp_ts_file)
-                except OSError:
-                    pass
-                
-                if extract_result.returncode != 0:
-                    raise RuntimeError(f"Failed to extract frame: {extract_result.stderr}")
-                
-                # Verify the final image was created successfully
-                if not os.path.exists(file_path) or os.path.getsize(file_path) < 1000:  # Minimum size check
-                    raise RuntimeError("Extracted image is too small or not created")
-                
-            except subprocess.TimeoutExpired as e:
-                raise RuntimeError(
-                    f"ffmpeg timed out: {str(e)}.\n"
-                    "This usually means no video data is being received on port " + str(port) + ".\n"
-                    f"Try previewing the stream first with: ffplay -protocol_whitelist file,rtp,udp -i {sdp_path}"
-                )
-            except Exception as e:
-                raise RuntimeError(f"Snapshot error: {str(e)}")
+        file_path = os.path.join(folder_path, f"{timestamp_str}.jpg")
         
-        print(f"Snapshot saved to {file_path}")
+        if not self.streams.get(port) or not str(self.streams[port]).startswith("ffmpeg_rtp_"):
+            self.start_stream(port)
+
+        sdp_path_for_cleanup = None
+
+        try:
+            sdp_filename = f"stream_{port}_{current_time.strftime('%Y%m%d%H%M%S%f')}.sdp"
+            sdp_path = os.path.join(self.sdp_dir, sdp_filename)
+            sdp_path_for_cleanup = sdp_path
+            
+            sdp_content = f"""v=0
+o=- 0 0 IN IP4 0.0.0.0
+s=RTP Stream on port {port}
+c=IN IP4 0.0.0.0
+t=0 0
+a=tool:libavformat 61.7.100
+m=video {port} RTP/AVP 96
+a=rtpmap:96 H264/90000
+a=fmtp:96 packetization-mode=1; profile-level-id=42e01f
+a=framerate:{self.stream_info['framerate']}
+"""
+            with open(sdp_path, "w") as f:
+                f.write(sdp_content)
+            print(f"Created unique SDP file for snapshot: {sdp_path}")
+
+            # Direct capture to JPG
+            capture_cmd = [
+                "ffmpeg",
+                "-protocol_whitelist", "file,rtp,udp",
+                "-i", sdp_path,
+                "-frames:v", "1",  # Capture a single video frame
+                "-q:v", "2",       # Output quality for JPG (1-31, lower is better)
+                "-y",              # Overwrite output file if it exists
+                file_path
+            ]
+            
+            max_retries = 100 
+            initial_retry_delay = 0.5 
+            retry_delay_increment = 0.1 
+            
+            capture_success = False
+            last_capture_result = None
+
+            for attempt in range(max_retries):
+                print(f"Running ffmpeg direct snapshot command for port {port} (attempt {attempt + 1}/{max_retries}): {' '.join(capture_cmd)}")
+                # Increased timeout as establishing connection and capturing one frame might take a moment
+                last_capture_result = subprocess.run(capture_cmd, capture_output=True, text=True, timeout=15) 
+                
+                if last_capture_result.returncode == 0:
+                    # Check if the file was created and has a reasonable size
+                    if os.path.exists(file_path) and os.path.getsize(file_path) > 1000: # Check for >1KB size
+                        capture_success = True
+                        break # Success
+                    else:
+                        # ffmpeg might return 0 but fail to produce a valid file in some edge cases
+                        print(f"ffmpeg command succeeded (port {port}, attempt {attempt + 1}) but output file '{file_path}' is invalid or too small.")
+                        # Continue to retry if attempts are left
+                
+                if "bind failed: Address already in use" in last_capture_result.stderr:
+                    if attempt < max_retries - 1:
+                        current_delay = initial_retry_delay + (attempt * retry_delay_increment)
+                        print(f"Port {port} in use (ffmpeg stderr: {last_capture_result.stderr.strip()}), retrying in {current_delay:.2f}s...")
+                        time.sleep(current_delay)
+                        continue
+                    else:
+                        break 
+                else: # Different error, fail immediately (no retry for other errors)
+                    break 
+            
+            if not capture_success:
+                if last_capture_result is None:
+                    raise RuntimeError(f"ffmpeg direct snapshot command for port {port} did not produce a result.")
+
+                error_description = "ffmpeg error"
+                if "bind failed: Address already in last_capture_result.stderr":
+                    error_description = "Address already in use"
+                
+                attempts_info = ""
+                if error_description == "Address already in use" and attempt == max_retries - 1 and max_retries > 1:
+                    attempts_info = f" after {max_retries} attempts"
+                
+                # Add info if file was not created or too small even if ffmpeg returned 0
+                file_issue_info = ""
+                if last_capture_result.returncode == 0 and (not os.path.exists(file_path) or os.path.getsize(file_path) <= 1000):
+                    file_issue_info = " Output file was not created or is too small."
+
+
+                detailed_error = (f"ffmpeg direct snapshot for port {port} failed{attempts_info} due to '{error_description}' "
+                                  f"(code {last_capture_result.returncode}):{file_issue_info}\n"
+                                  f"STDOUT: {last_capture_result.stdout}\nSTDERR: {last_capture_result.stderr}")
+                raise RuntimeError(detailed_error)
+                
+        except subprocess.TimeoutExpired as e:
+            raise RuntimeError(f"ffmpeg timed out for port {port}: {str(e)}.")
+        except Exception as e:
+            if isinstance(e, RuntimeError): # Re-raise our specific RuntimeErrors
+                 raise
+            else:
+                 raise RuntimeError(f"Unexpected snapshot error for port {port}: {str(e)}")
+        finally:
+            if sdp_path_for_cleanup and os.path.exists(sdp_path_for_cleanup):
+                try: 
+                    os.remove(sdp_path_for_cleanup)
+                except OSError as e_remove: 
+                    print(f"Warning: Could not remove sdp file {sdp_path_for_cleanup}: {e_remove}")
+        
+        if not silent:
+            print(f"Snapshot saved to {file_path}")
         return file_path
 
     def stop_all_streams(self):

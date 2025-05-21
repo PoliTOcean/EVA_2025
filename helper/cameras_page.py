@@ -3,6 +3,8 @@ from tkinter import ttk, messagebox
 import threading
 from datetime import datetime
 from rtp_handler import RTPStreamHandler
+import time # Import time for delay
+from PIL import Image, ImageTk # Import Pillow for image handling
 
 class CamerasPage(tk.Frame):
     def __init__(self, parent, controller):
@@ -12,6 +14,10 @@ class CamerasPage(tk.Frame):
         # Initialize RTP stream handler
         self.rtp_handler = RTPStreamHandler()
         self.stream_ip = "10.0.0.192"  # Default IP for RTP streams
+
+        # To store thumbnail labels and their PhotoImage objects
+        self.thumbnail_labels = {}
+        self.thumbnail_images = {} # To prevent garbage collection
 
         # Main frame for camera controls
         main_frame = ttk.Frame(self, padding=10)
@@ -47,6 +53,11 @@ class CamerasPage(tk.Frame):
                 command=lambda p=port: self.preview_stream(p)
             ).pack(side=tk.LEFT, padx=5)
 
+            # Add Label for thumbnail display
+            thumb_label = ttk.Label(port_frame)
+            thumb_label.pack(side=tk.LEFT, padx=10)
+            self.thumbnail_labels[port] = thumb_label
+
         # Group action buttons
         group_frame = ttk.LabelFrame(main_frame, text="Group Actions", padding=10)
         group_frame.pack(fill=tk.X, pady=10)
@@ -71,9 +82,15 @@ class CamerasPage(tk.Frame):
         """Take a photo from a specific RTP stream."""
         try:
             self.status_var.set(f"Taking photo from port {port}...")
-            file_path = self.rtp_handler.take_snapshot(port)
-            messagebox.showinfo("Success", f"Snapshot saved to {file_path}")
-            self.status_var.set("Ready")
+            # Call with silent=True to suppress rtp_handler's print
+            file_path = self.rtp_handler.take_snapshot(port, silent=True) 
+            
+            # Display thumbnail
+            if file_path:
+                self._display_thumbnail(port, file_path)
+            
+            # No success pop-up: messagebox.showinfo("Success", f"Snapshot saved to {file_path}")
+            self.status_var.set(f"Snapshot from port {port} taken.") # Update status
         except Exception as e:
             error_msg = str(e)
             print(f"Error taking snapshot: {error_msg}")
@@ -91,7 +108,32 @@ class CamerasPage(tk.Frame):
             
             messagebox.showerror("Snapshot Error", detail_msg)
             self.status_var.set("Error taking snapshot")
+            self._clear_thumbnail(port) # Clear thumbnail on error
     
+    def _display_thumbnail(self, port, file_path):
+        """Loads an image, resizes it, and displays it in the thumbnail label."""
+        try:
+            img = Image.open(file_path)
+            img.thumbnail((100, 75))  # Resize to 100x75 or your preferred size
+            photo_img = ImageTk.PhotoImage(img)
+            
+            if port in self.thumbnail_labels:
+                self.thumbnail_labels[port].config(image=photo_img)
+                # Keep a reference to the image to prevent it from being garbage collected
+                self.thumbnail_labels[port].image = photo_img 
+                self.thumbnail_images[port] = photo_img # Also store in dict
+        except Exception as e:
+            print(f"Error displaying thumbnail for port {port}: {e}")
+            self._clear_thumbnail(port)
+
+    def _clear_thumbnail(self, port):
+        """Clears the thumbnail for a given port."""
+        if port in self.thumbnail_labels:
+            self.thumbnail_labels[port].config(image='')
+            self.thumbnail_labels[port].image = None
+            if port in self.thumbnail_images:
+                del self.thumbnail_images[port]
+
     def preview_stream(self, port):
         """Preview the RTP stream using ffplay."""
         try:
@@ -114,12 +156,15 @@ class CamerasPage(tk.Frame):
         """Take snapshots from multiple cameras at the exact same time."""
         results = {}
         errors = {}
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        # Use a common base timestamp string for the group, ffmpeg_rtp_handler will add port and microsecond for uniqueness
+        base_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S") 
         self.status_var.set(f"Taking photos from ports {ports}...")
 
         def capture(port):
             try:
-                file_path = self.rtp_handler.take_snapshot(port, timestamp=timestamp)
+                # Pass the base_timestamp, rtp_handler will make it unique per port/call
+                # Call with silent=True
+                file_path = self.rtp_handler.take_snapshot(port, timestamp=base_timestamp, silent=True)
                 results[port] = file_path
             except Exception as e:
                 error_msg = str(e)
@@ -127,12 +172,26 @@ class CamerasPage(tk.Frame):
                 errors[port] = error_msg
 
         threads = []
+        # Launch threads as concurrently as possible.
+        # rtp_handler.py uses unique SDP files for each call, which should mitigate port conflicts for SDP.
+        # Underlying UDP port binding by ffmpeg for RTP data (5001, 5002 etc.) is the main concern for "Address already in use".
+        
         for port in ports:
             t = threading.Thread(target=capture, args=(port,))
             t.start()
             threads.append(t)
+        
         for t in threads:
             t.join()
+
+        # Update thumbnails for successful captures
+        for port, file_path in results.items():
+            self._display_thumbnail(port, file_path)
+        
+        # Clear thumbnails for failed captures
+        for port in errors.keys():
+            if port not in results: # Only clear if it wasn't successful despite an error log (shouldn't happen with current logic)
+                self._clear_thumbnail(port)
 
         # Update status based on results
         if results and not errors:
@@ -142,9 +201,10 @@ class CamerasPage(tk.Frame):
         else:
             self.status_var.set("All snapshots failed")
 
-        if results:
-            msg = "Snapshots saved:\n" + "\n".join([f"Camera {p}: {f}" for p, f in results.items()])
-            messagebox.showinfo("Success", msg)
+        # No general success pop-up for group action
+        # if results:
+        #     msg = "Snapshots saved:\n" + "\n".join([f"Camera {p}: {f}" for p, f in results.items()])
+        #     messagebox.showinfo("Success", msg)
         if errors:
             # Create a detailed error report
             error_report = "Errors occurred while taking snapshots:\n\n"
@@ -160,4 +220,4 @@ class CamerasPage(tk.Frame):
             )
             
             messagebox.showerror("Snapshot Errors", error_report)
-            
+
