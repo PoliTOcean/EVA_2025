@@ -26,10 +26,7 @@ The formats can be MJPG or H264:
 To understand which camera is associated with a specific `/dev/video*`, use the following command:
 
 ```bash
-for dev in $(ls /dev/video*); do
-  echo "=== $dev ==="
-  v4l2-ctl --device $dev --info | grep "Card type"
-done
+v4l2-ctl --list-devices
 ```
 
 This script will list all video devices and their corresponding camera models/types.

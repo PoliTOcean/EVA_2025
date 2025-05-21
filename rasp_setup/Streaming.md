@@ -31,7 +31,6 @@ jpegdec !  videoconvert !   x264enc \
 tune=zerolatency bitrate=2000 speed-preset=superfast ! \
 h264parse !  rtph264pay config-interval=1 pt=96 ! \
 udpsink host=127.0.0.1 port=5001
-
 ```
 
 **Explanation:**
