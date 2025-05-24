@@ -23,8 +23,18 @@ class SendTestMQTTPage(tk.Frame):
         
         ttk.Button(rov_frame, text="ARM ROV", command=self.send_arm_rov, width=20).pack(pady=5)
         ttk.Button(rov_frame, text="Change Controller Status", command=self.change_controller_status, width=20).pack(pady=5)
-        ttk.Button(rov_frame, text="Activate PITCH", command=self.send_activate_pitch_profile, width=20).pack(pady=5)
-        ttk.Button(rov_frame, text="Deactivate PITCH", command=self.send_deactivate_pitch_profile, width=20).pack(pady=5)
+        
+        # Frame for controller toggle buttons
+        controller_toggle_frame = tk.Frame(rov_frame)
+        controller_toggle_frame.pack(pady=5)
+
+        # Adjusted text and width for the three buttons
+        # Aiming for the total width of these three to be similar to a single width=20 button.
+        # (6 * 3) + padding should be visually comparable to a width=20 button.
+        ttk.Button(controller_toggle_frame, text="Depth", command=self.send_toggle_depth_status, width=6).pack(side=tk.LEFT, padx=2)
+        ttk.Button(controller_toggle_frame, text="Roll", command=self.send_toggle_roll_status, width=6).pack(side=tk.LEFT, padx=2)
+        ttk.Button(controller_toggle_frame, text="Pitch", command=self.send_toggle_pitch_status, width=6).pack(side=tk.LEFT, padx=2)
+        
         ttk.Button(rov_frame, text="WORK MODE", command=self.send_work_mode, width=20).pack(pady=5)
         
         # Quick Movement Panel
@@ -142,11 +152,14 @@ class SendTestMQTTPage(tk.Frame):
     def change_controller_status(self):
         self.send_message(MQTT_TOPIC_COMMANDS, {"CHANGE_CONTROLLER_STATUS": 0})
         
-    def send_activate_pitch_profile(self):
-        self.send_message(MQTT_TOPIC_COMMANDS, {"CHANGE_CONTROLLER_PROFILE": 7})
+    def send_toggle_depth_status(self):
+        self.send_message(MQTT_TOPIC_COMMANDS, {"CHANGE_DEPTH_STATUS": 0})
 
-    def send_deactivate_pitch_profile(self):
-        self.send_message(MQTT_TOPIC_COMMANDS, {"CHANGE_CONTROLLER_PROFILE": 3})
+    def send_toggle_roll_status(self):
+        self.send_message(MQTT_TOPIC_COMMANDS, {"CHANGE_ROLL_STATUS": 0})
+
+    def send_toggle_pitch_status(self):
+        self.send_message(MQTT_TOPIC_COMMANDS, {"CHANGE_PITCH_STATUS": 0})
         
     def send_work_mode(self):
         self.send_message(MQTT_TOPIC_COMMANDS, {"WORK_MODE": 1})
