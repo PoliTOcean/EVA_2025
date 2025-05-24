@@ -23,6 +23,8 @@ class SendTestMQTTPage(tk.Frame):
         
         ttk.Button(rov_frame, text="ARM ROV", command=self.send_arm_rov, width=20).pack(pady=5)
         ttk.Button(rov_frame, text="Change Controller Status", command=self.change_controller_status, width=20).pack(pady=5)
+        ttk.Button(rov_frame, text="Activate PITCH", command=self.send_activate_pitch_profile, width=20).pack(pady=5)
+        ttk.Button(rov_frame, text="Deactivate PITCH", command=self.send_deactivate_pitch_profile, width=20).pack(pady=5)
         ttk.Button(rov_frame, text="WORK MODE", command=self.send_work_mode, width=20).pack(pady=5)
         
         # Quick Movement Panel
@@ -139,6 +141,12 @@ class SendTestMQTTPage(tk.Frame):
 
     def change_controller_status(self):
         self.send_message(MQTT_TOPIC_COMMANDS, {"CHANGE_CONTROLLER_STATUS": 0})
+        
+    def send_activate_pitch_profile(self):
+        self.send_message(MQTT_TOPIC_COMMANDS, {"CHANGE_CONTROLLER_PROFILE": 7})
+
+    def send_deactivate_pitch_profile(self):
+        self.send_message(MQTT_TOPIC_COMMANDS, {"CHANGE_CONTROLLER_PROFILE": 3})
         
     def send_work_mode(self):
         self.send_message(MQTT_TOPIC_COMMANDS, {"WORK_MODE": 1})
