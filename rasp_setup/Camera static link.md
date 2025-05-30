@@ -5,8 +5,9 @@ Instead of dealing with changing `/dev/video4`, `/dev/video6`, etc., we want:
 ```bash
 /dev/camera-bottom
 /dev/camera-top
-/dev/camera-left
+/dev/camera-main
 /dev/camera-right
+/dev/camera-arm
 ```
 
 that always point to the correct camera, based on which USB port it’s plugged into.
@@ -92,7 +93,7 @@ SUBSYSTEM=="video4linux", ENV{ID_PATH}=="platform-xhci-hcd.0-usb-0:2.3:1.0", ATT
 ```
 
 📌 **Make sure you adjust the `ID_PATH` values** to the correct ones from your own system.
-the ATTR{index}=="0" is to make sure we are selecting the right interface of the camera
+the ATTR{index}=="0" is to make sure we are selecting the right interface of the camera, for the DWE camera the index is 2 to use H.264
 
 ---
 
@@ -118,19 +119,3 @@ You should see:
 ```
 
 🎉 Done!
-
----
-
-## ✅ Step 5: Test It
-
-Try opening the camera using your custom symlink:
-
-```bash
-ffplay /dev/camera-bottom
-```
-
-Or in Python with OpenCV:
-
-```python
-cv2.VideoCapture("/dev/camera-bottom")
-```

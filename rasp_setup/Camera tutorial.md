@@ -6,6 +6,13 @@ Cameras in Linux are seen as `/dev/video*`. They have different output formats a
 v4l2-ctl -d /dev/video0 --list-formats-ext
 ```
 
+after the camera static link setup is best to use:
+
+```bash
+v4l2-ctl -d /dev/camera-main --list-formats-ext
+```
+also to check that the ATTR{index} is set up correctly.
+
 ## Camera Formats Explained
 
 The formats can be MJPG or H264:
@@ -15,6 +22,7 @@ The formats can be MJPG or H264:
   - Cons: Higher bandwidth usage, must be transcoded for efficient streaming
   - Must be encoded to H264 for efficient network streaming
   - May introduce lag on the client side due to decoding overhead
+  - To stream in MJPG use ustreamer, easy to set up and easy to work with, also with the snapshots
 
 - **H264**: A compressed video format
   - Pros: Already compressed, lower bandwidth, ready for Real-Time Communication (RTC)
@@ -35,7 +43,3 @@ This script will list all video devices and their corresponding camera models/ty
 ## Port Configuration and Janus Integration
 
 Both DWE_OS_2 and GStreamer streams should target `127.0.0.1` (localhost), which is where Janus is running. The port selected for each camera stream must match the corresponding port defined in the Janus streaming configuration file (`janus.plugin.streaming.cfg`). In NEXUS, the different camera streams are then identified and displayed using their respective IDs configured in Janus.
-
-
-## Static camera indentification
-TODO
