@@ -7,7 +7,6 @@ from debug_mqtt_viewer_page import DebugMQTTViewerPage
 from send_test_mqtt_page import SendTestMQTTPage
 from update_configuration_page import UpdateConfigurationPage
 from logger_page import LoggerPage
-from cameras_page import CamerasPage
 from plotting_page import PlottingPage  # New plotting page
 
 # Import MQTT handler with additional functions
@@ -44,7 +43,6 @@ class MainApp(tk.Tk):
         tk.Button(nav_bar, text="Config", command=lambda: self.show_frame("UpdateConfigurationPage")).pack(side="left", padx=5, pady=5)
         tk.Button(nav_bar, text="Plots", command=lambda: self.show_frame("PlottingPage")).pack(side="left", padx=5, pady=5)
         tk.Button(nav_bar, text="Logger", command=lambda: self.show_frame("LoggerPage")).pack(side="left", padx=5, pady=5)
-        tk.Button(nav_bar, text="Cameras", command=lambda: self.show_frame("CamerasPage")).pack(side="left", padx=5, pady=5)
 
         # Create a container for the frames
         container = ttk.Frame(self)
@@ -54,7 +52,7 @@ class MainApp(tk.Tk):
 
         self.frames = {}
         # Include the new PlottingPage
-        for F in (DebugMQTTViewerPage, SendTestMQTTPage, UpdateConfigurationPage, PlottingPage, LoggerPage, CamerasPage): 
+        for F in (DebugMQTTViewerPage, SendTestMQTTPage, UpdateConfigurationPage, PlottingPage, LoggerPage): 
             page_name = F.__name__
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame

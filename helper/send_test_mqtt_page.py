@@ -36,6 +36,7 @@ class SendTestMQTTPage(tk.Frame):
         ttk.Button(controller_toggle_frame, text="Pitch", command=self.send_toggle_pitch_status, width=6).pack(side=tk.LEFT, padx=2)
         
         ttk.Button(rov_frame, text="WORK MODE", command=self.send_work_mode, width=20).pack(pady=5)
+        ttk.Button(rov_frame, text="VERTICAL MODE", command=self.send_vertical_mode, width=20).pack(pady=5)
         
         # Quick Movement Panel
         movement_frame = ttk.LabelFrame(control_row, text="Quick Movement", padding=10)
@@ -163,6 +164,9 @@ class SendTestMQTTPage(tk.Frame):
         
     def send_work_mode(self):
         self.send_message(MQTT_TOPIC_COMMANDS, {"WORK_MODE": 1})
+        
+    def send_vertical_mode(self):
+        self.send_message(MQTT_TOPIC_COMMANDS, {"VERTICAL_MODE_TOGGLE": 1})
         
     def update_depth_reference(self):
         try:
