@@ -7,7 +7,6 @@ from debug_mqtt_viewer_page import DebugMQTTViewerPage
 from send_test_mqtt_page import SendTestMQTTPage
 from update_configuration_page import UpdateConfigurationPage
 from logger_page import LoggerPage
-from cameras_page import CamerasPage
 from plotting_page import PlottingPage  # New plotting page
 
 # Import MQTT handler with additional functions
@@ -19,6 +18,8 @@ class MainApp(tk.Tk):
         self.title("Modular GUI with MQTT")
         self.geometry("800x900")
         self.mqtt_connected = False
+        self.reconnect_scheduled = False
+        self.reconnect_delay = 5000  # 5 seconds
 
         # Create a navigation bar
         nav_bar = tk.Frame(self, bg="lightgrey")
@@ -42,7 +43,6 @@ class MainApp(tk.Tk):
         tk.Button(nav_bar, text="Config", command=lambda: self.show_frame("UpdateConfigurationPage")).pack(side="left", padx=5, pady=5)
         tk.Button(nav_bar, text="Plots", command=lambda: self.show_frame("PlottingPage")).pack(side="left", padx=5, pady=5)
         tk.Button(nav_bar, text="Logger", command=lambda: self.show_frame("LoggerPage")).pack(side="left", padx=5, pady=5)
-        tk.Button(nav_bar, text="Cameras", command=lambda: self.show_frame("CamerasPage")).pack(side="left", padx=5, pady=5)
 
         # Create a container for the frames
         container = ttk.Frame(self)
@@ -52,7 +52,7 @@ class MainApp(tk.Tk):
 
         self.frames = {}
         # Include the new PlottingPage
-        for F in (DebugMQTTViewerPage, SendTestMQTTPage, UpdateConfigurationPage, PlottingPage, LoggerPage, CamerasPage): 
+        for F in (DebugMQTTViewerPage, SendTestMQTTPage, UpdateConfigurationPage, PlottingPage, LoggerPage): 
             page_name = F.__name__
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
@@ -72,8 +72,24 @@ class MainApp(tk.Tk):
         self.mqtt_connected = connected
         if connected:
             self.status_frame.config(bg="green")
+            self.connect_button.config(text="ROV Connected")
+            self.reconnect_scheduled = False  # Connection successful, cancel any pending reconnect
         else:
             self.status_frame.config(bg="red")
+            self.connect_button.config(text="Connect to ROV")
+            if not self.reconnect_scheduled:
+                print(f"MQTT disconnected. Scheduling reconnection in {self.reconnect_delay / 1000} seconds.")
+                self.reconnect_scheduled = True
+                self.after(self.reconnect_delay, self.attempt_reconnection)
+
+    def attempt_reconnection(self):
+        """Attempt to reconnect to MQTT if not already connected."""
+        if not self.mqtt_connected:
+            print("Attempting to reconnect to MQTT...")
+            self.connect_to_mqtt() 
+        # Regardless of outcome, allow update_connection_status to reschedule if needed
+        self.reconnect_scheduled = False
+
 
     def connect_to_mqtt(self):
         """Connect to MQTT using default values"""

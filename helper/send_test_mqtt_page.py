@@ -7,6 +7,7 @@ class SendTestMQTTPage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
+        self.slider_labels = {}
         
         # Main container with some padding
         main_frame = tk.Frame(self, padx=15, pady=15)
@@ -22,6 +23,20 @@ class SendTestMQTTPage(tk.Frame):
         
         ttk.Button(rov_frame, text="ARM ROV", command=self.send_arm_rov, width=20).pack(pady=5)
         ttk.Button(rov_frame, text="Change Controller Status", command=self.change_controller_status, width=20).pack(pady=5)
+        
+        # Frame for controller toggle buttons
+        controller_toggle_frame = tk.Frame(rov_frame)
+        controller_toggle_frame.pack(pady=5)
+
+        # Adjusted text and width for the three buttons
+        # Aiming for the total width of these three to be similar to a single width=20 button.
+        # (6 * 3) + padding should be visually comparable to a width=20 button.
+        ttk.Button(controller_toggle_frame, text="Depth", command=self.send_toggle_depth_status, width=6).pack(side=tk.LEFT, padx=2)
+        ttk.Button(controller_toggle_frame, text="Roll", command=self.send_toggle_roll_status, width=6).pack(side=tk.LEFT, padx=2)
+        ttk.Button(controller_toggle_frame, text="Pitch", command=self.send_toggle_pitch_status, width=6).pack(side=tk.LEFT, padx=2)
+        
+        ttk.Button(rov_frame, text="WORK MODE", command=self.send_work_mode, width=20).pack(pady=5)
+        ttk.Button(rov_frame, text="VERTICAL MODE", command=self.send_vertical_mode, width=20).pack(pady=5)
         
         # Quick Movement Panel
         movement_frame = ttk.LabelFrame(control_row, text="Quick Movement", padding=10)
@@ -102,6 +117,9 @@ class SendTestMQTTPage(tk.Frame):
         value_label = ttk.Label(slider_container, text="0", width=8)
         value_label.pack(side=tk.RIGHT)
         
+        # Store the label for later access
+        self.slider_labels[label] = value_label
+        
         # Bind to update the label when slider changes
         slider.bind("<Motion>", lambda e, s=slider, l=value_label: l.config(text=str(int(s.get()))))
         
@@ -122,6 +140,9 @@ class SendTestMQTTPage(tk.Frame):
         self.slider_pitch.set(0)
         self.slider_roll.set(0)
         self.slider_yaw.set(0)
+        # Update slider labels to 0
+        for label_widget in self.slider_labels.values():
+            label_widget.config(text="0")
 
     def send_axes_x(self):
         self.send_message(MQTT_TOPIC_AXES, {"X": 10000, "Y": 0, "Z": 0, "PITCH": 0, "ROLL": 0, "YAW": 0})
@@ -131,6 +152,21 @@ class SendTestMQTTPage(tk.Frame):
 
     def change_controller_status(self):
         self.send_message(MQTT_TOPIC_COMMANDS, {"CHANGE_CONTROLLER_STATUS": 0})
+        
+    def send_toggle_depth_status(self):
+        self.send_message(MQTT_TOPIC_COMMANDS, {"CHANGE_DEPTH_STATUS": 0})
+
+    def send_toggle_roll_status(self):
+        self.send_message(MQTT_TOPIC_COMMANDS, {"CHANGE_ROLL_STATUS": 0})
+
+    def send_toggle_pitch_status(self):
+        self.send_message(MQTT_TOPIC_COMMANDS, {"CHANGE_PITCH_STATUS": 0})
+        
+    def send_work_mode(self):
+        self.send_message(MQTT_TOPIC_COMMANDS, {"WORK_MODE": 1})
+        
+    def send_vertical_mode(self):
+        self.send_message(MQTT_TOPIC_COMMANDS, {"VERTICAL_MODE_TOGGLE": 1})
         
     def update_depth_reference(self):
         try:
