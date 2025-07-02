@@ -22,6 +22,8 @@ cd scripts/
 chmod +x ./install_janus.sh && ./install_janus.sh
 ```
 
+Good luck with the configuration of Janus, at beginning may not be easy, the most important file to modify is "${JANUS_CONFIG_DIR}/janus.jcfg", if nothing is working probably the problem is here.
+
 ## Step 3: Install and Configure DWE OS 2
 
 DWE OS 2 provides an alternative method for streaming H.264 encoded video directly from compatible cameras. Streaming directly with DWE OS often caused unexpected lag, install it only for controlling camera parameters such as brighness ecc.
@@ -33,6 +35,7 @@ curl -s https://raw.githubusercontent.com/DeepwaterExploration/DWE_OS_2/main/ins
 ```
 
 After installation, access the DWE OS interface by navigating to the Raspberry Pi's IP address in a web browser (e.g., `http://<rasp_ip>`). You should see the connected camera(s) listed.
+This is only used for changing camera parameters, all camera are streamed using custom pipelines to ensure the best latency.
 
 ## Step 4: Configure the streaming pipeline
 

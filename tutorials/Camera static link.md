@@ -10,7 +10,9 @@ Instead of dealing with changing `/dev/video4`, `/dev/video6`, etc., we want:
 /dev/camera-arm
 ```
 
-that always point to the correct camera, based on which USB port it’s plugged into.
+that always point to the correct camera, based on **which USB port it’s plugged into**.
+DO NOT CHANGE USB CAMERA PORTS!
+This allow the streaming to be robust, sometimes the device video* corresponding to a camera change number, stopping the streaming.
 
 ---
 

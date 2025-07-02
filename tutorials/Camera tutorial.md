@@ -38,8 +38,3 @@ v4l2-ctl --list-devices
 ```
 
 This script will list all video devices and their corresponding camera models/types.
-
-
-## Port Configuration and Janus Integration
-
-Both DWE_OS_2 and GStreamer streams should target `127.0.0.1` (localhost), which is where Janus is running. The port selected for each camera stream must match the corresponding port defined in the Janus streaming configuration file (`janus.plugin.streaming.cfg`). In NEXUS, the different camera streams are then identified and displayed using their respective IDs configured in Janus.

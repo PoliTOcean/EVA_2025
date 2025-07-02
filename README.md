@@ -29,6 +29,23 @@ On the NUCLEO‑L432KC board, a bare‑metal C application built on ST’s HAL l
 ## Helper
 For deeper analysis and tuning, we maintain a companion Python/Tk debug tool that connects via MQTT to display raw sensor dumps, per‑motor thrust values, live logs and adjustable control‑loop parameters such as controller gains. This app is divided into windows, is very good for lab testing since all essentials commands can be send to Oceanix, also statuses are printed along with real time plot for controller tuning, camera streamning can be tested and snapshot can be taken, also the configuration page edits the config.json on the Raspberry Pi.
 
+
 # Usage
-in rasp_setup all tutorial for setting up a new raspberry are contained, focusing on the handling of the camera also in general .
-usage.md contains instructions for EVA.
+For detailed instructions on operating EVA, see the [usage.md](usage.md) file.
+
+
+# Installation
+Go the the folder [tutorials](./tutorials/) to have a complete overview of the installation process and camera configuration on the Raspberry PI.
+
+Here the repo with the most important code:
+- [NEXUS Repository](https://github.com/PoliTOcean/nexus)
+- [Oceanix Repository](https://github.com/PoliTOcean/oceanix)
+
+# TODO
+## Improvements for Next Year
+
+- **Implement Motor Safety Timeout:** Update the STM Nucleo firmware to include a timeout mechanism. If no valid motor command is received within a set interval, automatically stop the motors to prevent unintended movement.
+- **Optimize CPU Usage:** Investigate and resolve high CPU load on the Raspberry Pi 5. Profile Oceanix and streaming processes to identify bottlenecks. Consider reducing the number of active video streams, optimizing code, or adjusting process priorities.
+- **Evaluate Hardware Upgrades:** Assess the feasibility of migrating to a platform with hardware-accelerated video encoding (e.g., NVIDIA Jetson) to offload video processing from the CPU and improve real-time performance.
+- **Improve Documentation:** Expand and update user and developer documentation, including setup guides, troubleshooting, and architecture diagrams.
+- **IMU Upgrade:** The current IMU sensor is not enough accurate to ensure a good PID. My suggestion is to migrate to a TransducerM TM171, which is more precise and stable, and can also be directly connected via USB.
