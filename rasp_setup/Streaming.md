@@ -58,14 +58,22 @@ If the test is passed now configura automatic stream at startup with systemctl s
     [Unit]
     Description=Camera Stream Service
     After=network.target
+    StartLimitIntervalSec=60
+    StartLimitBurst=3
 
     [Service]
+    Type=simple
     ExecStart=/home/politocean/firmware/start_camera_stream_main.sh
-    Restart=always
+
+    Restart=on-failure
     RestartSec=5
+
+    StartLimitAction=none
+    TimeoutStartSec=20
+
     User=root
     Environment=DISPLAY=:0
-    Environment=XAUTHORITY=/home/pi/.Xauthority
+    Environment=XAUTHORITY=/home/politocean/.Xauthority
 
     [Install]
     WantedBy=multi-user.target
