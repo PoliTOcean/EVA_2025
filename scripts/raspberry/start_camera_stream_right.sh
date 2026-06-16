@@ -1,7 +1,9 @@
 #!/bin/bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Aspetta il device
-until [ -e /dev/camera-right ]; do sleep 1; done
+# Staggered behind main to avoid USB contention on controller xhci-hcd.0.
+sleep 2
+"$SCRIPT_DIR/wait_for_camera.sh" /dev/camera-right
 
 # Pipeline ottimizzata per Janus (PC Base 10.0.0.69)
 gst-launch-1.0 v4l2src device=/dev/camera-right ! \

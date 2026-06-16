@@ -1,7 +1,9 @@
 #!/bin/bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Aspetta il device
-until [ -e /dev/camera-arm ]; do sleep 1; done
+# arm (icspring) is on a separate USB controller (xhci-hcd.1), so it does not
+# contend with the exploreHD cameras and can start without staggering.
+"$SCRIPT_DIR/wait_for_camera.sh" /dev/camera-arm
 
 # Pipeline specifica per Pi 5 (800x600 MJPEG -> H264)
 gst-launch-1.0 v4l2src device=/dev/camera-arm do-timestamp=true ! \

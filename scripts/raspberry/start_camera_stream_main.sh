@@ -1,7 +1,10 @@
 #!/bin/bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Aspetta il device
-until [ -e /dev/camera-main ]; do sleep 1; done
+# main, right and bottom (exploreHD) share USB controller xhci-hcd.0. Opening
+# them at the same instant causes USB contention and one fails to start, so the
+# three are staggered. main goes first (no extra delay).
+"$SCRIPT_DIR/wait_for_camera.sh" /dev/camera-main
 
 # Pipeline ottimizzata per Janus (PC Base 10.0.0.69)
 gst-launch-1.0 v4l2src device=/dev/camera-main ! \
