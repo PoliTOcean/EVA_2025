@@ -39,8 +39,10 @@ This is only used for changing camera parameters, all camera are streamed using 
 
 ## Step 4: Configure the streaming pipeline
 
-Copy all the start_camera_stream_'camera'.sh scripts in a folder on the Raspberry Pi. If you execute manually and Janus is already configured you shoud see from janus that the camera stream are found. Remember to change the IP in the scripts to the Control Station LAN IP.
-The resolution, bitrate and framerate ensure that the streaing of the 5 cameras does not overload the Raspberry Pi. However can be changed with other supported resolution, you can see the list with v4l2-ctl -d "camera" --list-formats-ext (Camera tutorial).
+Copy all the start_camera_stream_'camera'.sh scripts (and the shared `wait_for_camera.sh` helper) in a folder on the Raspberry Pi. If you execute manually and Janus is already configured you shoud see from janus that the camera stream are found. Remember to change the IP in the scripts to the Control Station LAN IP.
+There are four cameras: main, right, bottom and arm. The resolution, bitrate and framerate ensure that the streaming does not overload the Raspberry Pi nor the shared USB bus. However they can be changed with other supported resolutions, you can see the list with v4l2-ctl -d "camera" --list-formats-ext (Camera tutorial).
+
+The scripts use `wait_for_camera.sh` to wait until each device is actually openable (not just present as a udev symlink), and main/right/bottom are started staggered (right +2s, bottom +4s) because they share one USB controller and opening them simultaneously causes USB contention.
 
 To launch directly the script:
 ```bash
@@ -97,3 +99,39 @@ If the test is passed now configura automatic stream at startup with systemctl s
     ```
 
     Repeat all the steps for each camera
+
+## Troubleshooting
+
+### A camera lags or never starts at power-on (until you unplug/replug)
+main, right and bottom (the exploreHD cameras) are on the same USB controller. If their pipelines open at the exact same instant, one fails to open due to USB resource contention. The fix is already in the scripts: `wait_for_camera.sh` probes the device with a real one-frame capture before streaming, and right/bottom are staggered behind main. If it still happens, increase the `sleep` values in `start_camera_stream_right.sh` (+2s) and `start_camera_stream_bottom.sh` (+4s).
+
+### The main feed lags intermittently during use
+The three exploreHD cameras share a single USB 2.0 hub (480 Mbit/s). At 720p all three together saturate the bus; check with:
+
+```bash
+sudo dmesg | grep -iE "bandwidth|altsetting"
+```
+
+If you see `Not enough bandwidth for altsetting`, the bus is saturated. Lower the resolution/framerate of the least-used camera (bottom is already at 640x480@20 for this reason), or move one camera to a different USB controller (and update its udev rule, see [Camera static link](./Camera%20static%20link.md)).
+
+### Frozen / laggy frames on the control station side
+Bursty RTP can overflow the UDP receive buffer on the control station, dropping packets. Check the `RcvbufErrors` counter (5th number) — if it keeps growing while streaming, the buffer is too small:
+
+```bash
+grep Udp: /proc/net/snmp
+```
+
+The fix is shipped as `scripts/control_station/99-janus-udp.conf` and applied automatically by `install_janus.sh`. To apply it manually:
+
+```bash
+sudo cp scripts/control_station/99-janus-udp.conf /etc/sysctl.d/
+sudo sysctl --system
+```
+
+Then restart Janus so it reopens its sockets with the larger buffer.
+
+### Wrong video in the browser / WebRTC won't connect
+Janus must advertise the control station LAN IP, not WiFi. `install_janus.sh` sets `nat_1_1_mapping` to the LAN IP (`CONTROL_STATION_LAN_IP`) in `janus.jcfg`. Verify the running log shows the correct IP; if Janus picks a WiFi/other address, check that setting.
+
+### `start_janus.sh` errors with a gnome-terminal symbol lookup
+`start_janus.sh` runs Janus directly in the current terminal (no gnome-terminal), which avoids the snap library conflict. Stop it with `Ctrl+C`.
