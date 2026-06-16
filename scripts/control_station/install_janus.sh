@@ -116,6 +116,16 @@ else
     exit 1
 fi
 
+# Install UDP receive buffer tuning so bursty RTP from the cameras doesn't
+# overflow the socket buffer (which shows up as intermittent laggy video).
+UDP_SYSCTL_SOURCE="${SCRIPT_DIR}/99-janus-udp.conf"
+if [ -f "${UDP_SYSCTL_SOURCE}" ]; then
+    echo "Installing UDP buffer tuning to /etc/sysctl.d/99-janus-udp.conf..."
+    sudo cp "${UDP_SYSCTL_SOURCE}" /etc/sysctl.d/99-janus-udp.conf
+    sudo sysctl --system >/dev/null
+    echo "UDP buffer tuning applied (rmem_max=$(sysctl -n net.core.rmem_max))."
+fi
+
 echo "Janus installation and configuration steps completed."
 echo "Default Janus configuration files are in: ${JANUS_CONFIG_DIR}"
 echo "Janus plugins (including janus_streaming.so if enabled) are in: ${JANUS_PLUGIN_DIR}"
