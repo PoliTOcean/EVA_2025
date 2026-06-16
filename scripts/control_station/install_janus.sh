@@ -12,6 +12,10 @@ JANUS_CONFIG_DIR="${JANUS_INSTALL_PREFIX}/etc/janus"
 JANUS_PLUGIN_DIR="${JANUS_INSTALL_PREFIX}/lib/janus/plugins"
 CUSTOM_STREAMING_CONFIG_SOURCE="${SCRIPT_DIR}/janus.plugin.streaming.jcfg"
 CUSTOM_STREAMING_CONFIG_DEST="${JANUS_CONFIG_DIR}/janus.plugin.streaming.jcfg"
+# LAN IP of the Control Station: forced as WebRTC nat_1_1_mapping so Janus
+# always advertises this address (the LAN where the cameras stream), not a
+# random interface like WiFi.
+CONTROL_STATION_LAN_IP="10.0.0.69"
 
 # --- Script Start ---
 echo "Starting Janus Gateway installation and setup script..."
@@ -89,10 +93,13 @@ sudo make install
 echo "Installing default Janus configurations..."
 sudo make configs # Copies default .cfg files to ${JANUS_CONFIG_DIR}
 
-# 4. Finalize Configuration (Optional)
+# 4. Finalize Configuration
 # At this point, Janus is installed, and default configs are in ${JANUS_CONFIG_DIR}.
-# You can add sed/awk commands here to modify janus.cfg or plugin-specific .jcfg files if needed.
-# For example, to enable specific features in janus.plugin.streaming.jcfg.
+# Force the Control Station LAN IP as nat_1_1_mapping so Janus advertises the
+# correct address for WebRTC (otherwise it may pick WiFi or another interface).
+echo "Setting nat_1_1_mapping to ${CONTROL_STATION_LAN_IP} in janus.jcfg..."
+# Replace the nat_1_1_mapping line whether it's commented out (default) or already set.
+sudo sed -i "s|^[[:space:]]*#\{0,1\}[[:space:]]*nat_1_1_mapping.*|\tnat_1_1_mapping = \"${CONTROL_STATION_LAN_IP}\"|" "${JANUS_CONFIG_DIR}/janus.jcfg"
 
 cd ..
 # Copy custom janus.plugin.streaming.jcfg if it exists in the script's directory

@@ -4,7 +4,7 @@ camera1: {
         description = "main"
         video = true
         videoport = 5001
-        videopt = 100
+        videopt = 96
         videocodec= "h264"
         videortpmap=  "H264/90000"
         videofmtp= "profile-level-id=42e01f;packetization-mode=1"
@@ -16,7 +16,7 @@ camera2: {
         description = "right"
         video = true
         videoport = 5002
-        videopt = 100
+        videopt = 96
         videocodec= "h264"
         videortpmap=  "H264/90000"
         videofmtp= "profile-level-id=42e01f;packetization-mode=1"
@@ -28,7 +28,7 @@ camera3: {
         description = "bottom"
         video = true
         videoport = 5003
-        videopt = 100
+        videopt = 96
         videocodec= "h264"
         videortpmap=  "H264/90000"
         videofmtp= "profile-level-id=42e01f;packetization-mode=1"
@@ -40,7 +40,7 @@ camera4: {
         description = "arm"
         video = true
         videoport = 5004
-        videopt = 100
+        videopt = 96
         videocodec= "h264"
         videortpmap=  "H264/90000"
         videofmtp= "profile-level-id=42e01f;packetization-mode=1"
