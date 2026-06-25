@@ -29,3 +29,6 @@ myenv/
 
 # Janus build (cloned by scripts/control_station/install_janus.sh)
 janus-gateway/
+
+# Runtime logs from START_ALL.sh
+scripts/control_station/logs/
